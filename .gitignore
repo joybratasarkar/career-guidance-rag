@@ -1,0 +1,11 @@
+# .gitignore
+venv/
+__pycache__/
+*.pyc
+*.pdf
+*.env
+*.log
+./xooper.json
+./venv
+venv
+xooper.json
