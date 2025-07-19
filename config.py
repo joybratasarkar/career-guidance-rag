@@ -9,8 +9,10 @@ from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
 from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
+load_dotenv()
 
-
+MONGO_URI = os.getenv("MONGO_URI") # Note: os.getenv returns strings, convert if needed
 
 
 
@@ -35,7 +37,7 @@ class Settings(BaseSettings):
     
     # MongoDB Configuration
     mongo_uri: str = Field(
-        default="mongodb+srv://xooper:lsBAmSmNcI0s7uUW@xoopercluster.alvrs.mongodb.net/?retryWrites=true&w=majority&appName=xoopercluster",
+        default=MONGO_URI or "mongodb+srv://user:password@host/database",
         description="MongoDB connection URI"
     )
     database_name: str = Field(default="impacteers_rag", description="MongoDB database name")
