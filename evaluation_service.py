@@ -635,10 +635,16 @@ class EvaluationService:
         return state
     
     
-
+    
+    
+    
     async def run_evaluation(self) -> EvaluationResponse:
-        """Run the complete evaluation pipeline"""
+        """Run the complete evaluation pipeline with consistent memory"""
         start_time = time.time()
+
+        # FIXED: Use timestamp-based thread ID for evaluation runs
+        evaluation_id = f"eval_{int(time.time())}"
+        thread_id = f"evaluation_{evaluation_id}"  # Consistent for this evaluation run
 
         initial_state = EvaluationState(
             test_cases=[],
@@ -648,22 +654,26 @@ class EvaluationService:
             evaluation_report="",
             error="",
             stage="initialized",
-            thread_id=str(uuid.uuid4()),      # Generate unique thread ID
-            thread_ts=time.time()             # Optional timestamp
+            thread_id=thread_id,      # Use consistent thread ID
+            thread_ts=time.time()
         )
 
+        # FIXED: Use consistent config for memory persistence
+        config = {"configurable": {"thread_id": thread_id}}
+
         try:
-            # ✅ FIX: Add the missing config parameter with thread_id
-            final_state = await self.graph.ainvoke(
-                initial_state,
-                config={"configurable": {"thread_id": initial_state["thread_id"]}}
-            )
+            final_state = await self.graph.ainvoke(initial_state, config=config)
 
             processing_time = time.time() - start_time
 
-            # Save evaluation results
+            # Save evaluation results with thread_id for tracking
             if final_state.get("overall_metrics"):
-                await self.db_manager.save_evaluation(final_state)
+                evaluation_data = {
+                    **final_state,
+                    "evaluation_id": evaluation_id,
+                    "thread_id": thread_id
+                }
+                await self.db_manager.save_evaluation(evaluation_data)
 
             return EvaluationResponse(
                 success=not final_state.get("error"),
@@ -672,7 +682,6 @@ class EvaluationService:
                     k: v for k, v in final_state.get("overall_metrics", {}).items() 
                     if k.startswith("avg_") and k in ["avg_precision", "avg_recall", "avg_f1_score", "avg_similarity"]
                 },
-                
                 generation_metrics={
                     k: v for k, v in final_state.get("overall_metrics", {}).items() 
                     if k.startswith("avg_") and k in ["avg_relevance", "avg_accuracy", "avg_helpfulness", "avg_overall_score"]
@@ -680,7 +689,8 @@ class EvaluationService:
                 test_cases_count=len(final_state.get("test_cases", [])),
                 evaluation_report=final_state.get("evaluation_report", ""),
                 processing_time=processing_time,
-                error=final_state.get("error")
+                error=final_state.get("error"),
+                evaluation_id=evaluation_id  # Include for tracking
             )
 
         except Exception as e:
@@ -695,5 +705,6 @@ class EvaluationService:
                 test_cases_count=0,
                 evaluation_report="",
                 processing_time=processing_time,
-                error=str(e)
+                error=str(e),
+                evaluation_id=evaluation_id
             )

@@ -294,15 +294,24 @@ class ResponseTemplateManager:
         }
     
     def get_template_response(self, query: str) -> str:
-        """Get template response for query if pattern matches"""
+        """Get template response for query if pattern matches (excluding memory queries)"""
+        # Skip template matching for memory-related queries
+        memory_keywords = [
+            "conversation history", "previous conversation", "what conversation", 
+            "what did we discuss", "what have we talked", "our conversation"
+        ]
+        
+        if any(keyword in query.lower() for keyword in memory_keywords):
+            return ""  # Let memory handler take over
+        
+        # Continue with normal template matching
         for pattern, template_key in self.query_patterns.items():
             if re.match(pattern, query):
                 return self.templates.get(template_key, "")
         return ""
 
-
 class ResponseGenerator:
-    """Generate responses using LLM with template fallback"""
+    """Generate responses using LLM with template fallback and memory awareness"""
     
     def __init__(self, llm: ChatVertexAI):
         self.llm = llm
@@ -310,16 +319,23 @@ class ResponseGenerator:
         self.system_prompt = """You are an AI assistant for Impacteers, a career platform that helps students and professionals with job search, skills development, and career guidance.
 
 Important Guidelines:
-1. ALWAYS prioritize accuracy and match expected response formats exactly
-2. Use specific information from context when available 
-3. Always encourage users to sign up for personalized features
-4. Provide specific, actionable advice
-5. If context doesn't contain relevant information, acknowledge this and provide general guidance
-6. Keep responses concise but informative
-7. Focus on Impacteers' features: jobs, courses, assessments, mentorship, and community
-8. For specific queries about IIPL, mention it runs from August 5th to September 21st
-9. For mentor queries, mention Flipkart, Infosys, and early-stage startups
-10. For job fit queries, mention AI Job Match Score
+1. ALWAYS check conversation history first before responding
+2. If user asks about previous conversations, conversation history, or "what did we discuss", ALWAYS reference the actual conversation history provided
+3. Use specific information from context when available 
+4. Always encourage users to sign up for personalized features
+5. Provide specific, actionable advice
+6. If context doesn't contain relevant information, acknowledge this and provide general guidance
+7. Keep responses concise but informative
+8. Focus on Impacteers' features: jobs, courses, assessments, mentorship, and community
+9. For specific queries about IIPL, mention it runs from August 5th to September 21st
+10. For mentor queries, mention Flipkart, Infosys, and early-stage startups
+11. For job fit queries, mention AI Job Match Score
+
+MEMORY QUERIES HANDLING:
+- If user asks about "conversation history", "what we discussed", "previous conversation", or similar:
+  - ALWAYS reference the actual conversation history
+  - Summarize what was actually discussed
+  - Do NOT give generic responses about internships or tech jobs unless that's what was actually discussed
 
 Context: {context}
 
@@ -330,18 +346,33 @@ User Question: {query}
 Response:"""
     
     async def generate_response(self, query: str, context: str, history: List[Dict]) -> str:
-        """Generate response using templates first, then LLM if needed"""
+        """Generate response with enhanced memory awareness"""
         
-        # First, try to match with template
+        # Check for memory-related queries FIRST
+        memory_keywords = [
+            "conversation history", "previous conversation", "what conversation", 
+            "what did we discuss", "what have we talked", "our conversation",
+            "conversation we have", "what we discussed", "chat history",
+            "previous messages", "earlier conversation"
+        ]
+        
+        query_lower = query.lower()
+        is_memory_query = any(keyword in query_lower for keyword in memory_keywords)
+        
+        if is_memory_query:
+            logger.info(f"Memory query detected: {query}")
+            return await self._handle_memory_query(query, history)
+        
+        # Try template matching for non-memory queries
         template_response = self.template_manager.get_template_response(query)
-        if template_response:
+        if template_response and not is_memory_query:
             logger.info(f"Using template response for query: {query[:50]}...")
             return template_response
         
-        # Format conversation history
+        # Format conversation history for LLM
         history_text = ""
         if history:
-            for conv in history[-2:]:  # Last 2 conversations
+            for conv in history[-3:]:  # Last 3 conversations for context
                 history_text += f"User: {conv['user_query']}\nAssistant: {conv['response']}\n\n"
         
         # Create prompt
@@ -358,6 +389,25 @@ Response:"""
         except Exception as e:
             logger.error(f"Response generation failed: {e}")
             return "I apologize, but I'm having trouble generating a response right now. Please try again or sign up to explore Impacteers' features!"
+    
+    async def _handle_memory_query(self, query: str, history: List[Dict]) -> str:
+        """Handle queries about conversation history"""
+        if not history:
+            return "We haven't had any previous conversations in this session yet. This is our first interaction! How can I help you with your career today?"
+        
+        # Build conversation summary
+        conversation_summary = "Here's our conversation history:\n\n"
+        
+        for i, conv in enumerate(history, 1):
+            user_query = conv.get('user_query', 'Unknown query')
+            response_snippet = conv.get('response', 'No response')[:100] + "..." if len(conv.get('response', '')) > 100 else conv.get('response', 'No response')
+            
+            conversation_summary += f"{i}. You asked: \"{user_query}\"\n"
+            conversation_summary += f"   I responded: {response_snippet}\n\n"
+        
+        conversation_summary += "Is there anything specific from our conversation you'd like me to clarify or expand on?"
+        
+        return conversation_summary
 
 
 class InferenceService:
@@ -464,24 +514,71 @@ class InferenceService:
         workflow.add_edge("handle_error", END)
 
         return workflow.compile(checkpointer=self.memory)
+    async def debug_database_conversations(self, session_id: str):
+        """Debug method to check what's actually in the database"""
+        try:
+            # Check total conversations in database
+            total_convs = await self.db_manager.conversations_collection.count_documents({})
+            logger.info(f"Total conversations in database: {total_convs}")
+
+            # Check conversations for this session
+            session_convs = await self.db_manager.conversations_collection.count_documents({
+                "session_id": session_id
+            })
+            logger.info(f"Conversations for session {session_id}: {session_convs}")
+
+            # Get all conversations (limit 5 for debugging)
+            all_convs = await self.db_manager.conversations_collection.find({}).limit(5).to_list(5)
+            logger.info("Sample conversations in database:")
+            for conv in all_convs:
+                session = conv.get('session_id', 'N/A')
+                query = conv.get('user_query', 'N/A')
+                logger.info(f"  Session: {session}, Query: {query}")
+
+            # Check for exact session match
+            exact_match = await self.db_manager.conversations_collection.find({
+                "session_id": session_id
+            }).to_list(10)
+            logger.info(f"Exact matches for {session_id}: {len(exact_match)}")
+
+        except Exception as e:
+            logger.error(f"Database debug failed: {e}")
 
     async def _load_history(self, state: InferenceState) -> InferenceState:
-        """Load conversation history"""
+        """Load conversation history with enhanced debugging"""
         try:
             state["stage"] = "loading_history"
-            history = await self.db_manager.get_conversation_history(
+    
+            logger.info(f"Loading history for session: {state['session_id']}")
+            
+            # DEBUG: Check database state first
+            await self.debug_database_conversations(state['session_id'])
+    
+            # Load from database (long-term memory)
+            db_history = await self.db_manager.get_conversation_history(
                 state["session_id"], 
                 limit=settings.max_conversation_history
             )
-            
+    
+            logger.info(f"Database returned {len(db_history)} conversations")
+    
             # Convert all types to serializable types
-            serializable_history = convert_all_types_to_serializable(history)
+            serializable_history = convert_all_types_to_serializable(db_history)
             state["conversation_history"] = serializable_history
-            
+    
+            # DEBUG: Log each conversation
+            for i, conv in enumerate(serializable_history):
+                user_query = conv.get('user_query', 'N/A')
+                response_preview = conv.get('response', 'N/A')[:50] + "..." if len(conv.get('response', '')) > 50 else conv.get('response', 'N/A')
+                logger.info(f"  Conversation {i+1}: '{user_query}' -> '{response_preview}'")
+    
             return state
         except Exception as e:
+            logger.error(f"History loading failed: {str(e)}")
             state["error"] = f"History loading failed: {str(e)}"
             return state
+    
+    
     
     async def _process_query(self, state: InferenceState) -> InferenceState:
         """Process and enhance user query"""
@@ -541,14 +638,20 @@ class InferenceService:
             return state
     
     async def _save_conversation(self, state: InferenceState) -> InferenceState:
-        """Save conversation to memory"""
+        """Save conversation to database with enhanced logging"""
         try:
             state["stage"] = "saving_conversation"
-            
+
             # Convert all types to serializable before saving
             serializable_retrieved_docs = convert_all_types_to_serializable(state["retrieved_docs"])
             serializable_metadata = convert_all_types_to_serializable({"processed_query": state["processed_query"]})
-            
+
+            # DEBUG: Log what we're trying to save
+            logger.info(f"Saving conversation for session {state['session_id']}")
+            logger.info(f"User query: {state['user_query']}")
+            logger.info(f"Response: {state['response'][:100]}...")
+
+            # Save to database
             await self.db_manager.save_conversation(
                 state["session_id"],
                 state["user_query"],
@@ -556,9 +659,32 @@ class InferenceService:
                 serializable_retrieved_docs,
                 serializable_metadata
             )
-            
+
+            logger.info(f"Successfully saved conversation to database")
+
+            # UPDATE: Add current conversation to history for next request
+            current_conversation = {
+                "user_query": state["user_query"],
+                "response": state["response"],
+                "timestamp": datetime.utcnow().isoformat(),
+                "retrieved_docs": serializable_retrieved_docs,
+                "metadata": serializable_metadata
+            }
+
+            # Add to conversation history
+            if "conversation_history" not in state:
+                state["conversation_history"] = []
+
+            state["conversation_history"].append(current_conversation)
+
+            # Keep only recent conversations (last 10)
+            state["conversation_history"] = state["conversation_history"][-10:]
+
+            logger.info(f"Updated conversation history, now has {len(state['conversation_history'])} items")
+
             return state
         except Exception as e:
+            logger.error(f"Conversation saving failed: {str(e)}")
             state["error"] = f"Conversation saving failed: {str(e)}"
             return state
     
@@ -569,12 +695,35 @@ class InferenceService:
         state["response"] = "I apologize, but I'm having trouble right now. Please try again or visit our platform to explore Impacteers' features!"
         return state
     
+    
     async def chat(self, request: ChatRequest) -> ChatResponse:
-        """Main chat interface"""
+        """Main chat interface with enhanced memory debugging"""
         start_time = time.time()
-        
+
+        # Use consistent session-based thread mapping
         session_id = request.session_id or f"session_{uuid.uuid4()}"
-        
+        thread_id = f"thread_{session_id}"
+
+        logger.info(f"Processing request for session: {session_id}, thread: {thread_id}")
+        logger.info(f"User query: {request.query}")
+
+        # Check for existing workflow state
+        config = {"configurable": {"thread_id": thread_id}}
+
+        try:
+            existing_state = await self.graph.aget_state(config)
+            if existing_state and existing_state.values:
+                logger.info(f"Previous state exists with keys: {list(existing_state.values.keys())}")
+                if 'conversation_history' in existing_state.values:
+                    history_length = len(existing_state.values['conversation_history'])
+                    logger.info(f"Previous state has {history_length} conversation history items")
+            else:
+                logger.info("No previous state found")
+            has_previous_state = existing_state and existing_state.values
+        except Exception as e:
+            logger.error(f"Failed to get existing state: {e}")
+            has_previous_state = False
+
         initial_state = InferenceState(
             session_id=session_id,
             user_query=request.query,
@@ -585,19 +734,33 @@ class InferenceService:
             conversation_history=[],
             error="",
             stage="initialized",
-            thread_id=str(uuid.uuid4()),
+            thread_id=thread_id,
             thread_ts=time.time()
         )
-        
+
+        # If we have previous state, carry forward conversation history
+        if has_previous_state and existing_state.values:
+            previous_values = existing_state.values
+            if previous_values.get("conversation_history"):
+                initial_state["conversation_history"] = previous_values["conversation_history"]
+                logger.info(f"Carried forward {len(initial_state['conversation_history'])} conversations from previous state")
+
         try:
-            # Pass thread_id in config
-            final_state = await self.graph.ainvoke(
-                initial_state,
-                config={"configurable": {"thread_id": initial_state["thread_id"]}}
-            )
-            
+            # Execute with consistent thread_id for memory persistence
+            final_state = await self.graph.ainvoke(initial_state, config=config)
+
             processing_time = time.time() - start_time
-            
+
+            # DEBUG: Log final state
+            final_history_length = len(final_state.get('conversation_history', []))
+            logger.info(f"Final conversation history length: {final_history_length}")
+
+            if final_history_length > 0:
+                logger.info("Final conversation history items:")
+                for i, conv in enumerate(final_state.get('conversation_history', [])):
+                    user_q = conv.get('user_query', 'N/A')
+                    logger.info(f"  {i+1}. {user_q}")
+
             return ChatResponse(
                 response=final_state.get("response", ""),
                 session_id=session_id,
@@ -606,11 +769,11 @@ class InferenceService:
                 processing_time=processing_time,
                 error=final_state.get("error", None)
             )
-            
+
         except Exception as e:
             processing_time = time.time() - start_time
             logger.error(f"Chat processing failed: {e}")
-            
+
             return ChatResponse(
                 response="I apologize, but I'm having trouble right now. Please try again or visit our platform to explore Impacteers' features!",
                 session_id=session_id,
@@ -619,7 +782,7 @@ class InferenceService:
                 processing_time=processing_time,
                 error=str(e)
             )
-
+    
     async def get_conversation_history(self, session_id: str) -> List[Dict[str, Any]]:
         """Get conversation history for a session"""
         try:

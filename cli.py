@@ -97,6 +97,72 @@ class RAGSystemCLI:
             "evaluation": evaluation_result
         }
     
+    async def test_memory_functionality(self):
+        """Test memory functionality"""
+        click.echo("🧪 Testing memory functionality...")
+        
+        # Test with same session ID
+        session_id = "test_session_123"
+        
+        click.echo(f"Testing with session: {session_id}")
+        
+        # First message
+        click.echo("\n--- First Message ---")
+        request1 = ChatRequest(query="Hello, my name is John", session_id=session_id)
+        response1 = await self.inference_service.chat(request1)
+        click.echo(f"Response 1: {response1.response[:100]}...")
+        
+        # Check database immediately
+        click.echo("\n--- Checking Database ---")
+        await self.debug_database_conversations(session_id)
+        
+        # Wait a moment for database write
+        await asyncio.sleep(1)
+        
+        # Second message - should remember first
+        click.echo("\n--- Second Message ---")
+        request2 = ChatRequest(query="What's my name?", session_id=session_id)
+        response2 = await self.inference_service.chat(request2)
+        click.echo(f"Response 2: {response2.response[:100]}...")
+        
+        # Third message - test conversation history
+        click.echo("\n--- Third Message ---")
+        request3 = ChatRequest(query="What have we discussed so far?", session_id=session_id)
+        response3 = await self.inference_service.chat(request3)
+        click.echo(f"Response 3: {response3.response[:200]}...")
+        
+        click.echo("✅ Memory test completed")
+    
+    async def debug_database_conversations(self, session_id: str):
+        """Debug method to check what's actually in the database"""
+        try:
+            # Check total conversations in database
+            total_convs = await self.db_manager.conversations_collection.count_documents({})
+            click.echo(f"Total conversations in database: {total_convs}")
+            
+            # Check conversations for this session
+            session_convs = await self.db_manager.conversations_collection.count_documents({
+                "session_id": session_id
+            })
+            click.echo(f"Conversations for session {session_id}: {session_convs}")
+            
+            # Get all conversations (limit 5 for debugging)
+            all_convs = await self.db_manager.conversations_collection.find({}).limit(5).to_list(5)
+            click.echo("Sample conversations in database:")
+            for conv in all_convs:
+                session = conv.get('session_id', 'N/A')
+                query = conv.get('user_query', 'N/A')
+                click.echo(f"  Session: {session}, Query: {query}")
+                
+            # Check for exact session match
+            exact_match = await self.db_manager.conversations_collection.find({
+                "session_id": session_id
+            }).to_list(10)
+            click.echo(f"Exact matches for {session_id}: {len(exact_match)}")
+            
+        except Exception as e:
+            click.echo(f"❌ Database debug failed: {e}")
+    
     async def interactive_chat(self):
         """Interactive chat mode"""
         click.echo("💬 Interactive Chat Mode")
@@ -121,6 +187,10 @@ class RAGSystemCLI:
                 
                 if user_input.lower() == 'history':
                     await self._show_history()
+                    continue
+                
+                if user_input.lower() == 'debug':
+                    await self.debug_database_conversations(self.session_id)
                     continue
                 
                 if not user_input:
@@ -209,6 +279,7 @@ Available commands:
   help     - Show this help message
   status   - Show system status
   history  - Show conversation history
+  debug    - Debug database conversations
   quit     - Exit the chat
 
 Just type your question to chat with the assistant!
@@ -266,6 +337,35 @@ def setup():
             await rag_cli.cleanup()
     
     asyncio.run(_setup())
+
+
+@cli.command()
+def test_memory():
+    """Test memory functionality"""
+    async def _test_memory():
+        rag_cli = RAGSystemCLI()
+        try:
+            await rag_cli.initialize()
+            await rag_cli.test_memory_functionality()
+        finally:
+            await rag_cli.cleanup()
+    
+    asyncio.run(_test_memory())
+
+
+@cli.command()
+def debug_db():
+    """Debug database conversations"""
+    async def _debug_db():
+        rag_cli = RAGSystemCLI()
+        try:
+            await rag_cli.initialize()
+            session_id = click.prompt("Enter session ID to debug", default="test_session_123")
+            await rag_cli.debug_database_conversations(session_id)
+        finally:
+            await rag_cli.cleanup()
+    
+    asyncio.run(_debug_db())
 
 
 @cli.command()

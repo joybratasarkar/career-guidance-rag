@@ -851,8 +851,12 @@ class IngestionService:
         return state
 
     async def ingest_documents(self, documents: List[DocumentInput]) -> Dict[str, Any]:
-        """Main ingestion method"""
+        """Main ingestion method with consistent thread management"""
         start_time = time.time()
+        
+        # FIXED: Use content-based thread ID for ingestion consistency
+        content_hash = hash(str([doc.content for doc in documents]))
+        thread_id = f"ingestion_{abs(content_hash)}"  # Consistent for same content
         
         initial_state = IngestionState(
             documents=documents,
@@ -860,15 +864,15 @@ class IngestionService:
             stored_count=0,
             error="",
             stage="initialized",
-            thread_id=str(uuid.uuid4()),
+            thread_id=thread_id,  # Use consistent thread_id
             thread_ts=time.time()
         )
         
+        # FIXED: Use consistent config for memory persistence
+        config = {"configurable": {"thread_id": thread_id}}
+        
         try:
-            final_state = await self.graph.ainvoke(
-                initial_state,
-                config={"configurable": {"thread_id": initial_state["thread_id"]}}
-            )
+            final_state = await self.graph.ainvoke(initial_state, config=config)
             
             processing_time = time.time() - start_time
             
@@ -879,7 +883,8 @@ class IngestionService:
                 "chunks_created": len(final_state.get("processed_chunks", [])),
                 "stored_count": final_state.get("stored_count", 0),
                 "processing_time": processing_time,
-                "stage": final_state.get("stage", "unknown")
+                "stage": final_state.get("stage", "unknown"),
+                "thread_id": thread_id  # Include for tracking
             }
             
         except Exception as e:
@@ -893,8 +898,10 @@ class IngestionService:
                 "chunks_created": 0,
                 "stored_count": 0,
                 "processing_time": processing_time,
-                "stage": "failed"
+                "stage": "failed",
+                "thread_id": thread_id
             }
+
 
     async def get_comprehensive_sample_documents(self) -> List[DocumentInput]:
         """Get comprehensive sample documents covering all RAG model scenarios"""
