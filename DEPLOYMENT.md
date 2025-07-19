@@ -19,7 +19,7 @@ PROJECT_ID=xooper-450012
 LOCATION=us-central1
 
 # MongoDB Configuration (for local development)
-MONGO_URI=mongodb://admin:password@mongodb:27017/impacteers_rag?authSource=admin
+MONGO_URI=mongodb://admin:password@***mongodb***:27017/****
 
 # Redis Configuration (for local development)
 REDIS_URL=redis://redis:6379/0
