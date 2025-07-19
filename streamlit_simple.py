@@ -135,7 +135,7 @@ def main():
     st.markdown(
         """
         <div style='text-align: center'>
-            <p>🚀 Powered by Impacteers RAG System</p>
+            <p>© 2025 Chatbot RAG System</p>
             <p>Built with FastAPI, Redis, MongoDB, and Streamlit</p>
         </div>
         """,
