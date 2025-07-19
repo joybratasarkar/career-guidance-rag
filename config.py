@@ -61,6 +61,11 @@ class Settings(BaseSettings):
     api_version: str = Field(default="1.0.0", description="API version")
     api_host: str = Field(default="0.0.0.0", description="API host")
     api_port: int = Field(default=8000, description="API port")
+    # Redis Configuration
+    redis_host: str = Field(default="localhost", description="Redis server hostname")
+    redis_port: int = Field(default=6379, description="Redis server port")
+    redis_username: Optional[str] = Field(default=None, description="Redis username")
+    redis_password: Optional[str] = Field(default=None, description="Redis password")
     
     # System Configuration
     log_level: str = Field(default="INFO", description="Logging level")
