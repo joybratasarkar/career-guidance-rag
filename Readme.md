@@ -451,7 +451,6 @@ MIT License - see LICENSE file for details.
 
 ## 🔗 Links
 
-- **Impacteers Platform**: [https://impacteers.com](https://impacteers.com)
 - **API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
 - **LangGraph Documentation**: [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
 - **Vertex AI Documentation**: [https://cloud.google.com/vertex-ai/docs](https://cloud.google.com/vertex-ai/docs)
