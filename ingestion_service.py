@@ -4,7 +4,7 @@ Enhanced Ingestion service for the Impacteers RAG system with complete knowledge
 
 import logging
 from typing import List, Dict, Any, TypedDict
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 import uuid
 import time
@@ -807,7 +807,7 @@ class IngestionService:
                 for chunk, embedding in zip(batch, embeddings):
                     chunk["embedding"] = embedding.tolist() if hasattr(embedding, 'tolist') else embedding
                     chunk["doc_id"] = f"doc_{uuid.uuid4()}"
-                    chunk["created_at"] = datetime.utcnow().isoformat()
+                    chunk["created_at"] = datetime.now(timezone.utc).isoformat()
             
             logger.info(f"Created embeddings for {len(chunks)} chunks")
             return state

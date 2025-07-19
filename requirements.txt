@@ -18,6 +18,9 @@ langchain-text-splitters
 pymongo
 motor
 
+# Redis for conversation storage
+redis[hiredis]>=4.5.0
+
 # Google Cloud AI
 google-cloud-aiplatform
 google-auth

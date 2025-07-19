@@ -62,10 +62,12 @@ class Settings(BaseSettings):
     api_host: str = Field(default="0.0.0.0", description="API host")
     api_port: int = Field(default=8000, description="API port")
     # Redis Configuration
-    redis_host: str = Field(default="localhost", description="Redis server hostname")
-    redis_port: int = Field(default=6379, description="Redis server port")
-    redis_username: Optional[str] = Field(default=None, description="Redis username")
-    redis_password: Optional[str] = Field(default=None, description="Redis password")
+    redis_url: Optional[str] = Field(default=None, description="Redis connection URL", env="REDIS_URL")
+    redis_host: str = Field(default="localhost", description="Redis server hostname", env="REDIS_HOST")
+    redis_port: int = Field(default=6379, description="Redis server port", env="REDIS_PORT")
+    redis_username: Optional[str] = Field(default=None, description="Redis username", env="REDIS_USERNAME")
+    redis_password: Optional[str] = Field(default=None, description="Redis password", env="REDIS_PASSWORD")
+    redis_db: int = Field(default=0, description="Redis database number", env="REDIS_DB")
     
     # System Configuration
     log_level: str = Field(default="INFO", description="Logging level")
@@ -86,6 +88,12 @@ class Settings(BaseSettings):
         
         if not self.mongo_uri:
             raise ValueError("MongoDB URI not configured")
+        
+        if not self.redis_host:
+            raise ValueError("Redis host not configured")
+        
+        if not isinstance(self.redis_port, int) or not (1 <= self.redis_port <= 65535):
+            raise ValueError(f"Invalid Redis port: {self.redis_port}")
         
         return True
 

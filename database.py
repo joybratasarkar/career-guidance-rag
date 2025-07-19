@@ -1,10 +1,11 @@
 """
 Database operations for the Impacteers RAG system
+MongoDB for documents/evaluations, Redis for conversations
 """
 
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import IndexModel, TEXT
 from sklearn.metrics.pairwise import cosine_similarity
@@ -12,48 +13,73 @@ import numpy as np
 
 from config import settings
 from models import Document
+from redis_manager import RedisManager
 
 logger = logging.getLogger(__name__)
 
 
 class DatabaseManager:
-    """Async MongoDB database manager"""
+    """Hybrid database manager: MongoDB for documents/evaluations, Redis for conversations"""
 
     def __init__(self):
+        # MongoDB for documents and evaluations
         self.client: Optional[AsyncIOMotorClient] = None
         self.db = None
         self.documents_collection = None
-        self.conversations_collection = None
         self.evaluations_collection = None
+        self._mongo_connected = False
+        
+        # Redis for conversations
+        self.redis_manager = RedisManager()
+        
+        # Overall connection status
         self._is_connected = False
 
     async def connect(self):
-        """Connect to MongoDB"""
+        """Connect to both MongoDB and Redis"""
         if self._is_connected:
             return  # Already connected
 
         try:
+            # Connect to MongoDB
             self.client = AsyncIOMotorClient(settings.mongo_uri)
             self.db = self.client[settings.database_name]
             self.documents_collection = self.db.documents
-            self.conversations_collection = self.db.conversations
             self.evaluations_collection = self.db.evaluations
 
             await self.client.admin.command("ping")  # Check connection
             await self._setup_indexes()
+            self._mongo_connected = True
+            logger.info("Connected to MongoDB")
+            
+            # Connect to Redis
+            await self.redis_manager.connect()
+            logger.info("Connected to Redis")
 
             self._is_connected = True
-            logger.info("Connected to MongoDB")
+            logger.info("DatabaseManager fully connected (MongoDB + Redis)")
         except Exception as e:
-            logger.error(f"MongoDB connection error: {e}")
+            logger.error(f"Database connection error: {e}")
             raise
 
     async def disconnect(self):
-        """Disconnect from MongoDB"""
-        if self.client:
-            self.client.close()
-            self._is_connected = False
-            logger.info("Disconnected from MongoDB")
+        """Disconnect from both MongoDB and Redis"""
+        try:
+            if self.client:
+                self.client.close()
+                self._mongo_connected = False
+                logger.info("Disconnected from MongoDB")
+        except Exception as e:
+            logger.error(f"Error disconnecting from MongoDB: {e}")
+            
+        try:
+            await self.redis_manager.disconnect()
+            logger.info("Disconnected from Redis")
+        except Exception as e:
+            logger.error(f"Error disconnecting from Redis: {e}")
+        
+        self._is_connected = False
+        logger.info("DatabaseManager fully disconnected")
 
     async def _setup_indexes(self):
         """Setup MongoDB indexes"""
@@ -67,11 +93,7 @@ class DatabaseManager:
                 IndexModel([("created_at", -1)], name="created_at_index"),
             ])
 
-            await self.conversations_collection.create_indexes([
-                IndexModel([("session_id", 1)], name="session_id_index"),
-                IndexModel([("timestamp", -1)], name="timestamp_index"),
-                IndexModel([("session_id", 1), ("timestamp", -1)], name="session_timestamp_index"),
-            ])
+            # Note: No conversation indexes needed since using Redis
 
             await self.evaluations_collection.create_indexes([
                 IndexModel([("created_at", -1)], name="eval_created_at_index"),
@@ -169,47 +191,53 @@ class DatabaseManager:
 
     async def save_conversation(
         self,
-        session_id: str,
+        user_id: str,  # Changed from session_id to user_id
         user_query: str,
         response: str,
         retrieved_docs: List[Dict],
         metadata: Optional[Dict[str, Any]] = None
     ):
-        """Store a user conversation"""
+        """Store a user conversation in Redis"""
         try:
-            conversation = {
-                "session_id": session_id,
-                "user_query": user_query,
-                "response": response,
-                "retrieved_docs_count": len(retrieved_docs),
-                "retrieved_docs": retrieved_docs,
-                "metadata": metadata or {},
-                "timestamp": datetime.utcnow()
-            }
-
-            await self.conversations_collection.insert_one(conversation)
-            logger.debug(f"Saved conversation: {session_id}")
-
+            success = await self.redis_manager.save_conversation(
+                user_id=user_id,
+                user_query=user_query,
+                response=response,
+                retrieved_docs=retrieved_docs,
+                metadata=metadata
+            )
+            
+            if success:
+                logger.debug(f"Saved conversation to Redis: {user_id}")
+            else:
+                logger.error(f"Failed to save conversation to Redis: {user_id}")
+                
         except Exception as e:
             logger.error(f"Failed to save conversation: {e}")
             raise
 
-    async def get_conversation_history(self, session_id: str, limit: int = 5) -> List[Dict]:
-        """Fetch past conversation history"""
+    async def get_conversation_history(self, user_id: str, limit: int = 5) -> List[Dict]:
+        """Fetch past conversation history from Redis"""
         try:
-            cursor = self.conversations_collection.find(
-                {"session_id": session_id}
-            ).sort("timestamp", -1).limit(limit)
-
-            return list(reversed(await cursor.to_list(length=limit)))
+            history = await self.redis_manager.get_conversation_history(user_id, limit)
+            logger.debug(f"Retrieved {len(history)} conversations from Redis for user: {user_id}")
+            return history
 
         except Exception as e:
             logger.error(f"Failed to get conversation history: {e}")
             return []
 
     async def get_conversations_count(self) -> int:
+        """Get total conversation count across all users in Redis"""
         try:
-            return await self.conversations_collection.count_documents({})
+            user_sessions = await self.redis_manager.get_all_user_sessions()
+            total_count = 0
+            
+            for user_id in user_sessions:
+                count = await self.redis_manager.get_conversation_count(user_id)
+                total_count += count
+                
+            return total_count
         except Exception as e:
             logger.error(f"Failed to count conversations: {e}")
             return 0
@@ -217,7 +245,7 @@ class DatabaseManager:
     async def save_evaluation(self, evaluation_data: Dict[str, Any]):
         """Save evaluation results"""
         try:
-            evaluation_data["created_at"] = datetime.utcnow()
+            evaluation_data["created_at"] = datetime.now(timezone.utc)
             await self.evaluations_collection.insert_one(evaluation_data)
             logger.info("Evaluation saved")
 
@@ -237,20 +265,38 @@ class DatabaseManager:
             return None
 
     async def health_check(self) -> Dict[str, Any]:
-        """Health check endpoint for MongoDB"""
+        """Health check endpoint for both MongoDB and Redis"""
         try:
+            # Check MongoDB
             await self.client.admin.command("ping")
+            mongo_status = "healthy"
+            
+            # Check Redis
+            try:
+                redis_health = await self.redis_manager.health_check()
+                redis_status = redis_health.get("status", "unhealthy")
+            except Exception as redis_error:
+                logger.error(f"Redis health check failed: {redis_error}")
+                redis_status = "unhealthy"
+                redis_health = {"status": "unhealthy", "error": str(redis_error)}
+            
+            overall_status = "healthy" if mongo_status == "healthy" and redis_status == "healthy" else "unhealthy"
+            
             return {
-                "status": "healthy",
+                "status": overall_status,
+                "mongodb_status": mongo_status,
+                "redis_status": redis_status,
                 "documents_count": await self.get_documents_count(),
                 "conversations_count": await self.get_conversations_count(),
-                "last_check": datetime.utcnow()
+                "last_check": datetime.now(timezone.utc)
             }
         except Exception as e:
             return {
                 "status": "unhealthy",
                 "error": str(e),
-                "last_check": datetime.utcnow()
+                "mongodb_status": "unknown",
+                "redis_status": "unknown",
+                "last_check": datetime.now(timezone.utc)
             }
 
     def is_connected(self) -> bool:

@@ -54,11 +54,30 @@ class ConnectionManager:
             self.active_connections.pop(user_id, None)
 
     async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+        try:
+            await websocket.send_text(message)
+        except Exception as e:
+            logger.error(f"Failed to send WebSocket message: {e}")
+            # Find and remove the failed connection
+            for user_id, connections in self.active_connections.items():
+                if websocket in connections:
+                    self.disconnect(user_id, websocket)
+                    break
 
     async def broadcast_to_user(self, user_id: str, message: str):
-        for connection in self.active_connections.get(user_id, []):
-            await connection.send_text(message)
+        connections = self.active_connections.get(user_id, []).copy()  # Copy to avoid modification during iteration
+        failed_connections = []
+        
+        for connection in connections:
+            try:
+                await connection.send_text(message)
+            except Exception as e:
+                logger.error(f"Failed to broadcast to connection: {e}")
+                failed_connections.append(connection)
+        
+        # Remove failed connections
+        for failed_connection in failed_connections:
+            self.disconnect(user_id, failed_connection)
 
 manager = ConnectionManager()
 
@@ -133,9 +152,9 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     try:
         while True:
             data = await websocket.receive_text()
-            # Create chat request and get response
+            # Create chat request and get response with user_id
             req = ChatRequest(query=data, session_id=user_id)
-            res = await inference_service.chat(req)
+            res = await inference_service.chat(req, user_id=user_id)  # Pass user_id explicitly
             # Send back via WebSocket
             await manager.send_personal_message(res.response, websocket)
     except WebSocketDisconnect:
@@ -146,7 +165,8 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
 async def chat(request: ChatRequest):
     if not inference_service:
         raise HTTPException(status_code=503, detail="Inference service not available")
-    return await inference_service.chat(request)
+    # For REST endpoint, use session_id as user_id for compatibility
+    return await inference_service.chat(request, user_id=request.session_id)
 
 # Ingest documents
 @app.post("/ingest", response_model=IngestionResponse)
@@ -180,15 +200,17 @@ async def evaluate_system():
     return await evaluation_service.run_evaluation()
 
 # Conversation history
-@app.get("/conversations/{session_id}", response_model=List[ConversationHistory])
-async def get_conversation_history(session_id: str):
+@app.get("/conversations/{user_id}", response_model=List[ConversationHistory])
+async def get_conversation_history(user_id: str):
     if not inference_service:
         raise HTTPException(status_code=503, detail="Inference service not available")
-    hist = await inference_service.get_conversation_history(session_id)
+    hist = await inference_service.get_conversation_history(user_id)
     return [ConversationHistory(
-        session_id=conv["session_id"], user_query=conv["user_query"],
-        response=conv["response"], timestamp=conv["timestamp"],
-        retrieved_docs=conv.get("retrieved_docs_count", 0)
+        session_id=user_id,  # Use user_id as session_id for compatibility
+        user_query=conv["user_query"],
+        response=conv["response"], 
+        timestamp=conv["timestamp"],
+        retrieved_docs=len(conv.get("retrieved_docs", []))  # Count docs directly
     ) for conv in hist]
 
 # Sample documents

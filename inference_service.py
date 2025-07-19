@@ -4,7 +4,7 @@ Enhanced Inference service for the Impacteers RAG system with proper response te
 
 import logging
 from typing import List, Dict, Any, TypedDict
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 import uuid
 import time
@@ -49,7 +49,7 @@ def convert_all_types_to_serializable(obj: Any) -> Any:
 
 
 class InferenceState(TypedDict):
-    session_id: str
+    user_id: str  # Changed from session_id to user_id
     user_query: str
     processed_query: str
     retrieved_docs: List[Dict[str, Any]]
@@ -525,56 +525,47 @@ class InferenceService:
         workflow.add_edge("handle_error", END)
 
         return workflow.compile(checkpointer=self.memory)
-    async def debug_database_conversations(self, session_id: str):
-        """Debug method to check what's actually in the database"""
+    async def debug_redis_conversations(self, user_id: str):
+        """Debug method to check what's actually in Redis"""
         try:
-            # Check total conversations in database
-            total_convs = await self.db_manager.conversations_collection.count_documents({})
-            logger.info(f"Total conversations in database: {total_convs}")
+            # Check total conversations in Redis for this user
+            user_convs = await self.db_manager.get_conversation_history(user_id)
+            logger.info(f"Conversations for user {user_id}: {len(user_convs)}")
 
-            # Check conversations for this session
-            session_convs = await self.db_manager.conversations_collection.count_documents({
-                "session_id": session_id
-            })
-            logger.info(f"Conversations for session {session_id}: {session_convs}")
+            # Get all user sessions
+            all_users = await self.db_manager.redis_manager.get_all_user_sessions()
+            logger.info(f"Total users in Redis: {len(all_users)}")
 
-            # Get all conversations (limit 5 for debugging)
-            all_convs = await self.db_manager.conversations_collection.find({}).limit(5).to_list(5)
-            logger.info("Sample conversations in database:")
-            for conv in all_convs:
-                session = conv.get('session_id', 'N/A')
+            # Log sample conversations for this user
+            logger.info("Sample conversations for this user:")
+            for i, conv in enumerate(user_convs[:5]):  # Show first 5
                 query = conv.get('user_query', 'N/A')
-                logger.info(f"  Session: {session}, Query: {query}")
-
-            # Check for exact session match
-            exact_match = await self.db_manager.conversations_collection.find({
-                "session_id": session_id
-            }).to_list(10)
-            logger.info(f"Exact matches for {session_id}: {len(exact_match)}")
+                timestamp = conv.get('timestamp', 'N/A')
+                logger.info(f"  {i+1}. Query: {query}, Time: {timestamp}")
 
         except Exception as e:
-            logger.error(f"Database debug failed: {e}")
+            logger.error(f"Redis debug failed: {e}")
 
     async def _load_history(self, state: InferenceState) -> InferenceState:
-        """Load conversation history with enhanced debugging"""
+        """Load conversation history from Redis with enhanced debugging"""
         try:
             state["stage"] = "loading_history"
     
-            logger.info(f"Loading history for session: {state['session_id']}")
+            logger.info(f"Loading history for user: {state['user_id']}")
             
-            # DEBUG: Check database state first
-            await self.debug_database_conversations(state['session_id'])
+            # DEBUG: Check Redis state first
+            await self.debug_redis_conversations(state['user_id'])
     
-            # Load from database (long-term memory)
-            db_history = await self.db_manager.get_conversation_history(
-                state["session_id"], 
+            # Load from Redis (short-term memory with TTL)
+            redis_history = await self.db_manager.get_conversation_history(
+                state["user_id"], 
                 limit=settings.max_conversation_history
             )
     
-            logger.info(f"Database returned {len(db_history)} conversations")
+            logger.info(f"Redis returned {len(redis_history)} conversations")
     
             # Convert all types to serializable types
-            serializable_history = convert_all_types_to_serializable(db_history)
+            serializable_history = convert_all_types_to_serializable(redis_history)
             state["conversation_history"] = serializable_history
     
             # DEBUG: Log each conversation
@@ -649,7 +640,7 @@ class InferenceService:
             return state
     
     async def _save_conversation(self, state: InferenceState) -> InferenceState:
-        """Save conversation to database with enhanced logging"""
+        """Save conversation to Redis with enhanced logging"""
         try:
             state["stage"] = "saving_conversation"
 
@@ -658,26 +649,26 @@ class InferenceService:
             serializable_metadata = convert_all_types_to_serializable({"processed_query": state["processed_query"]})
 
             # DEBUG: Log what we're trying to save
-            logger.info(f"Saving conversation for session {state['session_id']}")
+            logger.info(f"Saving conversation for user {state['user_id']}")
             logger.info(f"User query: {state['user_query']}")
             logger.info(f"Response: {state['response'][:100]}...")
 
-            # Save to database
+            # Save to Redis
             await self.db_manager.save_conversation(
-                state["session_id"],
+                state["user_id"],  # Changed from session_id to user_id
                 state["user_query"],
                 state["response"],
                 serializable_retrieved_docs,
                 serializable_metadata
             )
 
-            logger.info(f"Successfully saved conversation to database")
+            logger.info(f"Successfully saved conversation to Redis")
 
             # UPDATE: Add current conversation to history for next request
             current_conversation = {
                 "user_query": state["user_query"],
                 "response": state["response"],
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "retrieved_docs": serializable_retrieved_docs,
                 "metadata": serializable_metadata
             }
@@ -707,15 +698,15 @@ class InferenceService:
         return state
     
     
-    async def chat(self, request: ChatRequest) -> ChatResponse:
-        """Main chat interface with enhanced memory debugging"""
+    async def chat(self, request: ChatRequest, user_id: str = None) -> ChatResponse:
+        """Main chat interface with Redis-based conversation storage"""
         start_time = time.time()
 
-        # Use consistent session-based thread mapping
-        session_id = request.session_id or f"session_{uuid.uuid4()}"
-        thread_id = f"thread_{session_id}"
+        # Use user_id as primary identifier, fallback to session_id for compatibility
+        actual_user_id = user_id or request.session_id or f"user_{uuid.uuid4()}"
+        thread_id = f"thread_{actual_user_id}"
 
-        logger.info(f"Processing request for session: {session_id}, thread: {thread_id}")
+        logger.info(f"Processing request for user: {actual_user_id}, thread: {thread_id}")
         logger.info(f"User query: {request.query}")
 
         # Check for existing workflow state
@@ -736,7 +727,7 @@ class InferenceService:
             has_previous_state = False
 
         initial_state = InferenceState(
-            session_id=session_id,
+            user_id=actual_user_id,  # Changed from session_id to user_id
             user_query=request.query,
             processed_query="",
             retrieved_docs=[],
@@ -774,7 +765,7 @@ class InferenceService:
 
             return ChatResponse(
                 response=final_state.get("response", ""),
-                session_id=session_id,
+                session_id=actual_user_id,  # Return user_id as session_id for compatibility
                 retrieved_docs=len(final_state.get("retrieved_docs", [])),
                 context_used=len(final_state.get("context", "")) > 0,
                 processing_time=processing_time,
@@ -787,17 +778,17 @@ class InferenceService:
 
             return ChatResponse(
                 response="I apologize, but I'm having trouble right now. Please try again or visit our platform to explore Impacteers' features!",
-                session_id=session_id,
+                session_id=actual_user_id,
                 retrieved_docs=0,
                 context_used=False,
                 processing_time=processing_time,
                 error=str(e)
             )
     
-    async def get_conversation_history(self, session_id: str) -> List[Dict[str, Any]]:
-        """Get conversation history for a session"""
+    async def get_conversation_history(self, user_id: str) -> List[Dict[str, Any]]:
+        """Get conversation history for a user from Redis"""
         try:
-            history = await self.db_manager.get_conversation_history(session_id)
+            history = await self.db_manager.get_conversation_history(user_id)
             return convert_all_types_to_serializable(history)
         except Exception as e:
             logger.error(f"Failed to get conversation history: {e}")
