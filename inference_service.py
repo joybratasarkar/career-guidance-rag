@@ -23,6 +23,8 @@ from config import settings
 from models import ChatRequest, ChatResponse
 from database import DatabaseManager
 
+from embedding_service import SharedEmbeddingService
+
 logger = logging.getLogger(__name__)
 
 
@@ -422,7 +424,9 @@ class InferenceService:
             temperature=settings.llm_temperature,
             model_kwargs={"convert_system_message_to_human": True},
         )
-        self.embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-V2")
+        # self.embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-V2")
+        self.embedding_model = SharedEmbeddingService.get_instance()
+
         
         # Initialize components
         self.query_processor = QueryProcessor(self.llm)

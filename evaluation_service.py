@@ -23,6 +23,7 @@ from config import settings
 from models import EvaluationResponse
 from database import DatabaseManager
 from inference_service import InferenceService
+from embedding_service import SharedEmbeddingService
 
 logger = logging.getLogger(__name__)
 
@@ -506,7 +507,8 @@ class EvaluationService:
         #     project=settings.project_id,
         #     location=settings.location
         # )
-        self.embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-V2")
+        # self.embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-V2")
+        self.embedding_model = SharedEmbeddingService.get_instance()
 
         
         # Initialize components

@@ -14,6 +14,7 @@ from langchain_google_vertexai import ChatVertexAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
+from embedding_service import SharedEmbeddingService
 
 # Try to import PDF processing libraries
 try:
@@ -717,7 +718,8 @@ class IngestionService:
             temperature=settings.llm_temperature,
             model_kwargs={"convert_system_message_to_human": True},
         )
-        self.embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        # self.embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        self.embedding_model = SharedEmbeddingService.get_instance()
         self.processor = DocumentProcessor()
         self.memory = MemorySaver()
         self.graph = self._build_graph()
