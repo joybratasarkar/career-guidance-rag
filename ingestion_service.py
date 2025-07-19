@@ -197,8 +197,8 @@ class DocumentProcessor:
         # Handle your specific files
         if "feature.pdf" in filename.lower():
             return self._get_platform_features_content()
-        elif "rag_knowledge.pdf" in filename.lower():
-            # For rag_knowledge.pdf, provide comprehensive content covering all categories
+        elif "updated_rag_knowledge.pdf" in filename.lower():
+            # For updated_rag_knowledge.pdf, provide comprehensive content covering all categories
             return self._get_comprehensive_rag_content()
         
         # Fallback to category-based content
@@ -219,365 +219,420 @@ class DocumentProcessor:
             return "\n\n".join(content_map.values())
 
     def _get_comprehensive_rag_content(self) -> str:
-        """Comprehensive RAG knowledge content covering all categories"""
+        """Comprehensive RAG knowledge content covering all categories with proper URLs"""
         return """
-        Impacteers Comprehensive Knowledge Base - RAG Content
-        
-        JOB SEARCH AND OPPORTUNITIES:
-        
-        General Job Search:
-        Before exploring job opportunities, please sign up to get personalised job suggestions.
-        You can browse open roles and access curated job listings handpicked for your profile.
-        
-        Latest Job Openings:
-        Please create your Impacteers account to access curated job listings and opportunities handpicked for your profile.
-        
-        Remote Job Opportunities:
-        Discover a wide range of remote roles tailored to your skills. Signup to unlock personalized remote job recommendations.
-        
-        Location-Based Job Search:
-        Show me jobs in Bangalore: Sure! Here are jobs available in Bangalore: Jobs in Bangalore. Before applying, we recommend signing up for tailored recommendations.
-        
-        Company-Specific Jobs:
-        Apple Jobs: Great choice! Here's what we found related to Apple: Apple Jobs. Before applying, take a skill assessment to evaluate your strengths or check our courses to stand out.
-        
-        Internships for Freshers:
-        Yes! We've curated internships perfect for freshers. First, sign up to unlock personalised matches.
-        
-        Tech Jobs and Opportunities:
-        Explore the latest tech roles on Impacteers. To enhance your chances, consider our tech skill certifications and get matched to leading employers.
-        
-        Final Year Student Opportunities:
-        Yes, many companies offer pre-placement roles and fresher openings. Sign up to get personalized job suggestions that align with your graduation timeline.
-        
-        Trending Jobs:
-        Currently trending: data analysis, UI/UX, customer success, and full-stack roles. Sign up to explore more and get matched to hot openings.
-        
-        Content Writing Jobs:
-        Roles like content strategist, copywriter, SEO writer, and blog manager could be a fit. Sign up to get content-specific job alerts.
-        
-        Highest Paying Jobs for Freshers:
-        Roles in sales engineering, product design, and data analytics offer great starting packages. Sign up to compare salaries and apply now.
-        
-        AI Job Match Score:
-        Great question! We use an AI Job Match Score that instantly tells you how well your profile matches a job — based on your skills, experience, and role requirements. Just sign up to unlock your score and boost your hiring chances.
-        
-        Interview Support:
-        That can be frustrating! Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together.
-        
-        COURSES AND UPSKILLING:
-        
-        Course Offerings:
-        We offer curated courses designed for career acceleration in diverse fields. Explore personalized learning paths and unlock new opportunities.
-        
-        Data Science Courses:
-        We've curated top-rated data science courses from trusted sources. Explore them here: Data Science Courses. For a smarter start, take our skill check first so we can match you better.
-        
-        Coding Programs:
-        Impacteers hosts beginner to advanced coding programs with mentor support and real-world projects.
-        
-        Product Management Courses:
-        Awesome goal! Start by checking our recommended Product Management courses, and if you'd like, take our skill assessment to know where to begin.
-        
-        UI/UX Design Courses:
-        You're in the right place! Check out our beginner-friendly UI/UX courses. These come with mentorship and portfolio support too.
-        
-        Free Courses Available:
-        Absolutely. Here's a list of top free courses: Free Courses. And if you'd like a customized plan, take a quick skill check.
-        Many of our courses are free or low-cost to help you learn without limits. To begin, sign up and personalize your experience!
-        
-        Data Analysis Learning:
-        Absolutely! We offer practical, career-aligned courses in data analysis. Sign up to track your progress and unlock full access!
-        
-        Learning for All Backgrounds:
-        Absolutely. Impacteers is built for people at all learning stages. Whether you passed or failed, your growth starts here. Browse beginner-friendly courses. Signing up helps us guide you better!
-        
-        Short Format Courses:
-        Totally understand! We offer short-format, high-impact courses that fit into a busy schedule. Explore them here — just sign up to access the right ones for your needs!
-        
-        SKILL ASSESSMENT AND TESTING:
-        
-        Skill Discovery:
-        No worries! Most people discover hidden strengths through our assessment — like communication, logic, or leadership traits.
-        Take our free Skill Check by signing up — we'll guide you step-by-step.
-        
-        Interview Readiness Assessment:
-        Let's find out! We check soft skills, role clarity, and test answers using our prep tools.
-        Sign up here to take the Interview Readiness Quiz and get detailed feedback.
-        
-        Comprehensive Skill Testing:
-        Yup! We assess problem-solving, communication, and domain-specific skills. It's quick and free — just sign up to get started and see where you stand.
-        
-        Course Prerequisite Testing:
-        Not required, but highly recommended! Our skill assessment helps you choose the best course for your current level. Try it here — and sign up to get started!
-        
-        Skills Validation:
-        Even if you're confident, our test can help match you to roles or courses you might not have considered. It's free, quick, and surprisingly insightful. Try it here. Sign-up is required.
-        
-        Scientific Accuracy:
-        They're designed by career experts and educators to give you real insight into your strengths. It's not just for fun — it's a stepping stone to smarter choices. Try it here, once you sign up.
-        
-        MENTORSHIP PROGRAM:
-        
-        Experienced Mentors:
-        Yes! We've got mentors from Flipkart, Infosys, and early-stage startups who guide 1-on-1.
-        Sign up here to see mentor profiles and request a session.
-        
-        Career Path Guidance:
-        Based on your interests, we suggest exploring career clusters (like Design, Tech, Biz). A mentor can guide you deeper.
-        Please sign up to access our career path tool & mentorship sessions.
-        
-        Mentorship Availability:
-        Absolutely! From resume reviews to portfolio prep, our mentors are ready to help.
-        Sign up to browse them and book a free 15-minute intro call.
-        
-        Career Transition Support:
-        You're not alone — and yes, that's exactly what our mentors are here for. Sign up to get paired with someone who understands your path.
-        
-        Data Science Mentorship:
-        That's a great move! We have experienced data science mentors who've successfully transitioned themselves. Sign up here to get connected and receive personalized guidance.
-        
-        Career Pivot Support:
-        Absolutely! Many of our mentors have pivoted into AI from non-tech backgrounds. Sign up and we'll connect you with someone who understands your journey.
-        
-        Tech Career Guidance:
-        You're not alone! We've got mentors who help with exactly that — figuring out your first step into tech. Sign up here and we'll match you with the right guide.
-        
-        AI Career Exploration:
-        Yes! Our AI experts can help you understand what it takes and how to begin. Sign up now to chat with someone who's already in the field.
-        
-        COMMUNITY AND EVENTS:
-        
-        Competitions and Hackathons:
-        Yes! We regularly host exciting hackathons, quizzes, and other contests to help you learn and win. Sign up here to explore upcoming events.
-        
-        IIPL Tournament Information:
-        IIPL (Impacteers International Premier League) is an intra-college sports and career development tournament designed to empower students across Tamil Nadu. IIPL is an initiative by Impacteers to revolutionize how students engage with both sports and career-building.
-        The tournament runs from August 5th to September 21st and is designed for team spirit, leadership, and digital career readiness.
-        
-        Sports and Fun Events:
-        Yes! Alongside learning events, we host college sports leagues and cultural fests like IIPL — a mix of fun, competition, and networking. Sign up to be part of it.
-        
-        Student Networking:
-        Definitely! Our community is filled with ambitious students across India. Join discussions, collaborate on projects, or compete in quizzes together — just sign up here.
-        
-        Weekly Challenges:
-        We host weekly challenges, quizzes, and fun mini-events to keep learning engaging. You can participate by signing up here.
-        
-        Skill Showcase Opportunities:
-        Yes! Whether it's through hackathons, IIPL, or leaderboards, you'll find many ways to shine. Sign up and jump in.
-        
-        Resume Building Events:
-        Absolutely! Join our community projects, hackathons, and volunteer teams to build real-world experience. Sign up here to get started.
-        
-        Networking Platform:
-        Yes! Our Impacteers community is the perfect place to find peers, mentors, and collaborators. Sign up and say hi.
+        # IMPACTEERS RAG MODEL QUESTIONS - COMPREHENSIVE KNOWLEDGE BASE
+
+        ## Category 1: Job Search & Opportunities
+
+        **I'm looking for a job. What jobs are available?**
+        Before exploring job opportunities, please sign up to get personalised job suggestions. You can browse open roles here: https://www.impacteers.com/jobs
+
+        **Show me the latest job openings.**
+        Please create your Impacteers account to access curated job listings and opportunities handpicked for your profile. Visit: https://www.impacteers.com/jobs
+
+        **Any remote jobs?**
+        Discover a wide range of remote roles tailored to your skills. Signup to unlock personalized remote job recommendations. Check out: https://www.impacteers.com/jobs
+
+        **Show me jobs in Bangalore**
+        Sure! Here are jobs available in Bangalore: Jobs in Bangalore. Before applying, we recommend signing up for tailored recommendations. https://www.impacteers.com/jobs
+
+        **I want to work at Apple**
+        Great choice! Here's what we found related to Apple: Apple Jobs. Before applying, take a skill assessment to evaluate your strengths or check our courses to stand out. https://www.impacteers.com/skill-assessment https://www.impacteers.com/courses
+
+        **Any internships for freshers?**
+        Yes! We've curated internships perfect for freshers. First, sign up to unlock personalised matches: https://www.impacteers.com/jobs
+
+        **I'm not getting interview calls**
+        That can be frustrating! Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together. https://www.impacteers.com/resume https://www.impacteers.com/skill-assessment
+
+        **What tech jobs do you have?**
+        Explore the latest tech roles on Impacteers. To enhance your chances, consider our tech skill certifications and get matched to leading employers: https://www.impacteers.com/courses
+
+        **I'm in my final year. Any jobs for me?**
+        Yes, many companies offer pre-placement roles and fresher openings. https://www.impacteers.com/clubs [Sign up here] to get personalized job suggestions that align with your graduation timeline.
+
+        **Where are the trending jobs now?**
+        Currently trending: data analysis, UI/UX, customer success, and full-stack roles. Sign up to explore more and get matched to hot openings. https://www.impacteers.com/clubs https://www.impacteers.com/jobs
+
+        **I'm good at content writing. What jobs suit me?**
+        Roles like content strategist, copywriter, SEO writer, and blog manager could be a fit. Sign up to get content-specific job alerts. https://www.impacteers.com/jobs
+
+        **What's the highest paying job for freshers?**
+        Roles in sales engineering, product design, and data analytics offer great starting packages. Sign up to compare salaries and apply now. https://www.impacteers.com/jobs https://www.impacteers.com/clubs
+
+        **How do I know if I'm a good fit for a job?**
+        Great question! We use an AI Job Match Score that instantly tells you how well your profile matches a job — based on your skills, experience, and role requirements. Just sign up to unlock your score and boost your hiring chances. https://www.impacteers.com/skill-assessment
+
+        ## Category 2: Courses & Upskilling
+
+        **How can I upskill? What courses do you offer?**
+        We offer curated courses designed for career acceleration in diverse fields. Explore personalized learning paths and unlock new opportunities: https://www.impacteers.com/courses
+
+        **Recommend courses for data science (or any domain).**
+        We've curated top-rated data science courses from trusted sources. Explore them here: Data Science Courses. For a smarter start, take our skill check first so we can match you better. https://www.impacteers.com/courses https://www.impacteers.com/skill-assessment
+
+        **I want to learn coding.**
+        Impacteers hosts beginner to advanced coding programs with mentor support and real-world projects. Get started here: https://www.impacteers.com/courses
+
+        **How do I upskill for a product management role?**
+        Awesome goal! Start by checking our recommended Product Management courses, and if you'd like, take our skill assessment to know where to begin. https://www.impacteers.com/courses https://www.impacteers.com/skill-assessment
+
+        **I need to learn UI/UX**
+        You're in the right place! Check out our beginner-friendly UI/UX courses. These come with mentorship and portfolio support too. https://www.impacteers.com/courses https://www.impacteers.com/mentor
+
+        **Free courses available?**
+        Absolutely. Here's a list of top free courses: Free Courses. And if you'd like a customized plan, take a quick skill check. https://www.impacteers.com/courses https://www.impacteers.com/skill-assessment
+
+        **Are the courses free?**
+        Many of our courses are free or low-cost to help you learn without limits. Check them out here: https://www.impacteers.com/courses. To begin, sign up and personalize your experience!
+
+        **Can I learn data analysis here?**
+        Absolutely! We offer practical, career-aligned courses in data analysis. Start here: https://www.impacteers.com/courses. Sign up to track your progress and unlock full access!
+
+        **I failed my college exams. Can I still learn here?**
+        Absolutely. Impacteers is built for people at all learning stages. Whether you passed or failed, your growth starts here. Browse beginner-friendly courses: https://www.impacteers.com/courses. Signing up helps us guide you better!
+
+        **I don't have time for long courses. Do you have anything short and useful?**
+        Totally understand! We offer short-format, high-impact courses that fit into a busy schedule. Explore them here: https://www.impacteers.com/courses — just sign up to access the right ones for your needs!
+
+        ## Category 3: Skill Assessment
+
+        **I don't know what skills I have**
+        No worries! Most people discover hidden strengths through our assessment — like communication, logic, or leadership traits. Take our free Skill Check by signing up— we'll guide you step-by-step. https://www.impacteers.com/skill-assessment
+
+        **Am I ready for interviews?**
+        Let's find out! We check soft skills, role clarity, and test answers using our prep tools. Sign up here to take the Interview Readiness Quiz and get detailed feedback. https://www.impacteers.com/skill-assessment
+
+        **Can you test my skills?**
+        Yup! We assess problem-solving, communication, and domain-specific skills. It's quick and free — just sign up to get started and see where you stand. https://www.impacteers.com/skill-assessment
+
+        **Do I need to complete a test before taking a course?**
+        Not required, but highly recommended! Our skill assessment helps you choose the best course for your current level. Try it here: https://www.impacteers.com/skill-assessment — and sign up to get started!
+
+        **I already know my skills. Why should I take this test?**
+        Even if you're confident, our test can help match you to roles or courses you might not have considered. It's free, quick, and surprisingly insightful. Try it here: https://www.impacteers.com/skill-assessment. Sign-up is required.
+
+        **Are these assessments scientifically accurate or just for fun?**
+        They're designed by career experts and educators to give you real insight into your strengths. It's not just for fun — it's a stepping stone to smarter choices. Try it here: https://www.impacteers.com/skill-assessment, once you sign up.
+
+        ## Category 4: Mentorship
+
+        **Can I get help from someone experienced?**
+        Yes! We've got mentors from Flipkart, Infosys, and early-stage startups who guide 1-on-1. Sign up here to see mentor profiles and request a session: https://www.impacteers.com/mentor
+
+        **I need help choosing a career path**
+        Based on your interests, we suggest exploring career clusters (like Design, Tech, Biz). A mentor can guide you deeper. Please sign up to access our career path tool & mentorship sessions. https://www.impacteers.com/career-path https://www.impacteers.com/mentor
+
+        **Is mentorship available here?**
+        Absolutely! From resume reviews to portfolio prep, our mentors are ready to help. Sign up to browse them and book a free 15-minute intro call. https://www.impacteers.com/mentor
+
+        **Can I interact with other professionals? Any communities?**
+        You're in the right place! Check out our beginner-friendly courses and community. These come with mentorship and portfolio support too. https://www.impacteers.com/community https://www.impacteers.com/mentor
+
+        **I feel stuck in my career. Can a mentor help me?**
+        You're not alone — and yes, that's exactly what our mentors are here for. Sign up to get paired with someone who understands your path: https://www.impacteers.com/mentor
+
+        **I want to talk to a professional in data science. I'm planning a career switch.**
+        That's a great move! We have experienced data science mentors who've successfully transitioned themselves. Sign up here to get connected and receive personalized guidance: https://www.impacteers.com/mentor
+
+        **Can someone guide me if I want to shift from sales to AI?**
+        Absolutely! Many of our mentors have pivoted into AI from non-tech backgrounds. Sign up and we'll connect you with someone who understands your journey: https://www.impacteers.com/mentor
+
+        **I'm lost. I want to get into tech but don't know where to start. Can I talk to someone?**
+        You're not alone! We've got mentors who help with exactly that — figuring out your first step into tech. Sign up here and we'll match you with the right guide: https://www.impacteers.com/mentor
+
+        **Is there a mentor who can help me understand if AI is right for me?**
+        Yes! Our AI experts can help you understand what it takes and how to begin. Sign up now to chat with someone who's already in the field: https://www.impacteers.com/mentor
+
+        ## Category 5: Community & Events
+
+        **Are there any competitions or hackathons I can join?**
+        Yes! We regularly host exciting hackathons, quizzes, and other contests to help you learn and win. Sign up here to explore upcoming events: https://www.impacteers.com/events
+
+        **What's IIPL? I saw it mentioned somewhere**
+        IIPL (Impacteers International Premier League) is a intra-college sports and career development tournament designed to empower students across Tamil Nadu. IIPL is an initiative by Impacteers to revolutionize how students engage with both sports and career-building. The tournament runs from August 5th to September 21st and is designed for team spirit, leadership, and digital career readiness. https://www.impacteers.com/events
+
+        **Do you organize any sports or fun events for students?**
+        Yes! Alongside learning events, we host college sports leagues and cultural fests like IIPL — a mix of fun, competition, and networking. Sign up to be part of it: https://www.impacteers.com/events https://www.impacteers.com/community
+
+        **Can I connect with students from other colleges?**
+        Definitely! Our community is filled with ambitious students across India. Join discussions, collaborate on projects, or compete in quizzes together — just sign up here: https://www.impacteers.com/community
+
+        **How can I take part in your quizzes or weekly challenges?**
+        We host weekly challenges, quizzes, and fun mini-events to keep learning engaging. You can participate by signing up here: https://www.impacteers.com/events
+
+        **Is there a way to showcase my skills or compete with others?**
+        Yes! Whether it's through hackathons, IIPL, or leaderboards, you'll find many ways to shine. Sign up and jump in: https://www.impacteers.com/events
+
+        **I'm looking to build my resume. Are there any community projects or events I can join?**
+Absolutely! Join our community projects, hackathons, and volunteer teams to build real-world experience. Sign up here to get started: https://www.impacteers.com/community
+
+        **Is there a place where I can network or find like-minded learners?**
+        Yes! Our Impacteers community is the perfect place to find peers, mentors, and collaborators. Sign up and say hi: https://www.impacteers.com/community
+
+        ## Additional Features & Tools
+
+        **Resume & Cover Letter Tools:**
+        - Resume Builder: https://www.impacteers.com/resume
+        - Cover Letter Generator: https://www.impacteers.com/coverletter
+
+        **Career Development Tools:**
+        - Learning Paths: https://www.impacteers.com/learning-path
+        - Career Assessment Test: https://www.impacteers.com/career-assessment-test-ai
+        - Career Path Explorer: https://www.impacteers.com/career-path
+
+        **Community Features:**
+        - Student Clubs: https://www.impacteers.com/clubs
+        - Events & Competitions: https://www.impacteers.com/events
+        - Community Platform: https://www.impacteers.com/community
+
+        **Platform Features:**
+        AI Job Match Score: Our AI Job Match Score instantly tells you how well your profile matches a job based on your skills, experience, and role requirements. Just sign up to unlock your score and boost your hiring chances.
+
+        Interview Readiness Tools: Take our Interview Readiness Quiz to check soft skills, role clarity, and test answers using our prep tools. Sign up here to get detailed feedback.
+
+        Resume Builder: Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together.
+
+        Skill Assessment Platform: Take our comprehensive skill assessment to identify your strengths and areas for improvement. Get personalized recommendations for courses and learning paths based on your results.
+
+        Mentorship Network: Connect with experienced professionals from Flipkart, Infosys, and early-stage startups who can guide your career journey. Get personalized advice, feedback, and support from mentors in your field.
+
+        Course Platform: Access a wide range of courses designed to accelerate your career growth. Learn from industry experts and gain certifications that matter to employers. Choose from technical skills, soft skills, and leadership development programs.
+
+        Community Features: Participate in networking events, workshops, and career fairs. Connect with like-minded professionals and expand your network. Join industry-specific groups and attend virtual and in-person events.
+
+        Career Planning Tools: Work with career counselors to create a personalized career plan. Set goals, track progress, and adjust your strategy as needed. Explore different career paths and understand the requirements for each.
+
+        Job Search Platform: Discover curated job openings from top companies across various industries. Our AI-powered matching system connects you with roles that align with your skills and career goals. Filter by location, salary, experience level, and industry to find your perfect match.
         """
 
     def _get_job_search_content(self) -> str:
-        """Complete job search and opportunities content"""
+        """Complete job search and opportunities content with URLs"""
         return """
-        Impacteers Job Search and Opportunities
+        # Impacteers Job Search and Opportunities
 
-        Job Search Features:
-        Before exploring job opportunities, please sign up to get personalised job suggestions.
-        You can browse open roles and access curated job listings handpicked for your profile.
-        
-        Location-Based Job Search:
-        Show me jobs in Bangalore: Sure! Here are jobs available in Bangalore: Jobs in Bangalore. Before applying, we recommend signing up for tailored recommendations.
-        
-        Remote Job Opportunities:
-        Discover a wide range of remote roles tailored to your skills. Signup to unlock personalized remote job recommendations.
-        
-        Company-Specific Jobs:
-        Apple Jobs: Great choice! Here's what we found related to Apple: Apple Jobs. Before applying, take a skill assessment to evaluate your strengths or check our courses to stand out.
-        
-        Internships for Freshers:
-        Yes! We've curated internships perfect for freshers. First, sign up to unlock personalised matches.
-        
-        Tech Jobs and Opportunities:
-        Explore the latest tech roles on Impacteers. To enhance your chances, consider our tech skill certifications and get matched to leading employers.
-        
-        Final Year Student Opportunities:
-        Yes, many companies offer pre-placement roles and fresher openings. Sign up to get personalized job suggestions that align with your graduation timeline.
-        
-        Trending Jobs:
-        Currently trending: data analysis, UI/UX, customer success, and full-stack roles. Sign up to explore more and get matched to hot openings.
-        
-        Content Writing Jobs:
-        Roles like content strategist, copywriter, SEO writer, and blog manager could be a fit. Sign up to get content-specific job alerts.
-        
-        Highest Paying Jobs for Freshers:
-        Roles in sales engineering, product design, and data analytics offer great starting packages. Sign up to compare salaries and apply now.
-        
-        AI Job Match Score:
-        Great question! We use an AI Job Match Score that instantly tells you how well your profile matches a job — based on your skills, experience, and role requirements. Just sign up to unlock your score and boost your hiring chances.
-        
-        Interview Support:
-        That can be frustrating! Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together.
+        **General Job Search:**
+        Before exploring job opportunities, please sign up to get personalised job suggestions. You can browse open roles here: https://www.impacteers.com/jobs
+
+        **Latest Job Openings:**
+        Please create your Impacteers account to access curated job listings and opportunities handpicked for your profile. Visit: https://www.impacteers.com/jobs
+
+        **Remote Job Opportunities:**
+        Discover a wide range of remote roles tailored to your skills. Signup to unlock personalized remote job recommendations. Check out: https://www.impacteers.com/jobs
+
+        **Location-Based Job Search:**
+        Show me jobs in Bangalore: Sure! Here are jobs available in Bangalore: Jobs in Bangalore. Before applying, we recommend signing up for tailored recommendations. https://www.impacteers.com/jobs
+
+        **Company-Specific Jobs:**
+        Apple Jobs: Great choice! Here's what we found related to Apple: Apple Jobs. Before applying, take a skill assessment to evaluate your strengths or check our courses to stand out. https://www.impacteers.com/skill-assessment https://www.impacteers.com/courses
+
+        **Internships for Freshers:**
+        Yes! We've curated internships perfect for freshers. First, sign up to unlock personalised matches: https://www.impacteers.com/jobs
+
+        **Tech Jobs and Opportunities:**
+        Explore the latest tech roles on Impacteers. To enhance your chances, consider our tech skill certifications and get matched to leading employers: https://www.impacteers.com/courses
+
+        **Final Year Student Opportunities:**
+        Yes, many companies offer pre-placement roles and fresher openings. https://www.impacteers.com/clubs [Sign up here] to get personalized job suggestions that align with your graduation timeline.
+
+        **Trending Jobs:**
+        Currently trending: data analysis, UI/UX, customer success, and full-stack roles. Sign up to explore more and get matched to hot openings. https://www.impacteers.com/clubs https://www.impacteers.com/jobs
+
+        **Content Writing Jobs:**
+        Roles like content strategist, copywriter, SEO writer, and blog manager could be a fit. Sign up to get content-specific job alerts. https://www.impacteers.com/jobs
+
+        **Highest Paying Jobs for Freshers:**
+        Roles in sales engineering, product design, and data analytics offer great starting packages. Sign up to compare salaries and apply now. https://www.impacteers.com/jobs https://www.impacteers.com/clubs
+
+        **AI Job Match Score:**
+        Great question! We use an AI Job Match Score that instantly tells you how well your profile matches a job — based on your skills, experience, and role requirements. Just sign up to unlock your score and boost your hiring chances. https://www.impacteers.com/skill-assessment
+
+        **Interview Support:**
+        That can be frustrating! Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together. https://www.impacteers.com/resume https://www.impacteers.com/skill-assessment
         """
 
     def _get_courses_content(self) -> str:
-        """Complete courses and upskilling content"""
+        """Complete courses and upskilling content with URLs"""
         return """
-        Impacteers Courses and Upskilling Programs
+        # Impacteers Courses and Upskilling Programs
 
-        Course Offerings:
-        We offer curated courses designed for career acceleration in diverse fields. Explore personalized learning paths and unlock new opportunities.
-        
-        Data Science Courses:
-        We've curated top-rated data science courses from trusted sources. Explore them here: Data Science Courses. For a smarter start, take our skill check first so we can match you better.
-        
-        Coding Programs:
-        Impacteers hosts beginner to advanced coding programs with mentor support and real-world projects.
-        
-        Product Management Courses:
-        Awesome goal! Start by checking our recommended Product Management courses, and if you'd like, take our skill assessment to know where to begin.
-        
-        UI/UX Design Courses:
-        You're in the right place! Check out our beginner-friendly UI/UX courses. These come with mentorship and portfolio support too.
-        
-        Free Courses Available:
-        Absolutely. Here's a list of top free courses: Free Courses. And if you'd like a customized plan, take a quick skill check.
-        Many of our courses are free or low-cost to help you learn without limits. To begin, sign up and personalize your experience!
-        
-        Data Analysis Learning:
-        Absolutely! We offer practical, career-aligned courses in data analysis. Sign up to track your progress and unlock full access!
-        
-        Learning for All Backgrounds:
-        Absolutely. Impacteers is built for people at all learning stages. Whether you passed or failed, your growth starts here. Browse beginner-friendly courses. Signing up helps us guide you better!
-        
-        Short Format Courses:
-        Totally understand! We offer short-format, high-impact courses that fit into a busy schedule. Explore them here — just sign up to access the right ones for your needs!
+        **Course Offerings:**
+        We offer curated courses designed for career acceleration in diverse fields. Explore personalized learning paths and unlock new opportunities: https://www.impacteers.com/courses
+
+        **Data Science Courses:**
+        We've curated top-rated data science courses from trusted sources. Explore them here: Data Science Courses. For a smarter start, take our skill check first so we can match you better. https://www.impacteers.com/courses https://www.impacteers.com/skill-assessment
+
+        **Coding Programs:**
+        Impacteers hosts beginner to advanced coding programs with mentor support and real-world projects. Get started here: https://www.impacteers.com/courses
+
+        **Product Management Courses:**
+        Awesome goal! Start by checking our recommended Product Management courses, and if you'd like, take our skill assessment to know where to begin. https://www.impacteers.com/courses https://www.impacteers.com/skill-assessment
+
+        **UI/UX Design Courses:**
+        You're in the right place! Check out our beginner-friendly UI/UX courses. These come with mentorship and portfolio support too. https://www.impacteers.com/courses https://www.impacteers.com/mentor
+
+        **Free Courses Available:**
+        Absolutely. Here's a list of top free courses: Free Courses. And if you'd like a customized plan, take a quick skill check. https://www.impacteers.com/courses https://www.impacteers.com/skill-assessment
+
+        **Are the courses free?**
+        Many of our courses are free or low-cost to help you learn without limits. Check them out here: https://www.impacteers.com/courses. To begin, sign up and personalize your experience!
+
+        **Data Analysis Learning:**
+        Absolutely! We offer practical, career-aligned courses in data analysis. Start here: https://www.impacteers.com/courses. Sign up to track your progress and unlock full access!
+
+        **Learning for All Backgrounds:**
+        Absolutely. Impacteers is built for people at all learning stages. Whether you passed or failed, your growth starts here. Browse beginner-friendly courses: https://www.impacteers.com/courses. Signing up helps us guide you better!
+
+        **Short Format Courses:**
+        Totally understand! We offer short-format, high-impact courses that fit into a busy schedule. Explore them here: https://www.impacteers.com/courses — just sign up to access the right ones for your needs!
         """
 
     def _get_skill_assessment_content(self) -> str:
-        """Complete skill assessment content"""
+        """Complete skill assessment content with URLs"""
         return """
-        Impacteers Skill Assessment and Testing
+        # Impacteers Skill Assessment and Testing
 
-        Skill Discovery:
-        No worries! Most people discover hidden strengths through our assessment — like communication, logic, or leadership traits.
-        Take our free Skill Check by signing up — we'll guide you step-by-step.
-        
-        Interview Readiness Assessment:
-        Let's find out! We check soft skills, role clarity, and test answers using our prep tools.
-        Sign up here to take the Interview Readiness Quiz and get detailed feedback.
-        
-        Comprehensive Skill Testing:
-        Yup! We assess problem-solving, communication, and domain-specific skills. It's quick and free — just sign up to get started and see where you stand.
-        
-        Course Prerequisite Testing:
-        Not required, but highly recommended! Our skill assessment helps you choose the best course for your current level. Try it here — and sign up to get started!
-        
-        Skills Validation:
-        Even if you're confident, our test can help match you to roles or courses you might not have considered. It's free, quick, and surprisingly insightful. Try it here. Sign-up is required.
-        
-        Scientific Accuracy:
-        They're designed by career experts and educators to give you real insight into your strengths. It's not just for fun — it's a stepping stone to smarter choices. Try it here, once you sign up.
-        
-        Career Development Support:
-        That can be frustrating! Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together.
+        **Skill Discovery:**
+        No worries! Most people discover hidden strengths through our assessment — like communication, logic, or leadership traits. Take our free Skill Check by signing up— we'll guide you step-by-step. https://www.impacteers.com/skill-assessment
+
+        **Interview Readiness Assessment:**
+        Let's find out! We check soft skills, role clarity, and test answers using our prep tools. Sign up here to take the Interview Readiness Quiz and get detailed feedback. https://www.impacteers.com/skill-assessment
+
+        **Comprehensive Skill Testing:**
+        Yup! We assess problem-solving, communication, and domain-specific skills. It's quick and free — just sign up to get started and see where you stand. https://www.impacteers.com/skill-assessment
+
+        **Course Prerequisite Testing:**
+        Not required, but highly recommended! Our skill assessment helps you choose the best course for your current level. Try it here: https://www.impacteers.com/skill-assessment — and sign up to get started!
+
+        **Skills Validation:**
+        Even if you're confident, our test can help match you to roles or courses you might not have considered. It's free, quick, and surprisingly insightful. Try it here: https://www.impacteers.com/skill-assessment. Sign-up is required.
+
+        **Scientific Accuracy:**
+        They're designed by career experts and educators to give you real insight into your strengths. It's not just for fun — it's a stepping stone to smarter choices. Try it here: https://www.impacteers.com/skill-assessment, once you sign up.
+
+        **Career Development Support:**
+        That can be frustrating! Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together. https://www.impacteers.com/resume https://www.impacteers.com/skill-assessment
+
+        **Career Assessment Test AI:**
+        Take our AI-powered career assessment to get personalized insights: https://www.impacteers.com/career-assessment-test-ai
         """
 
     def _get_mentorship_content(self) -> str:
-        """Complete mentorship content"""
+        """Complete mentorship content with URLs"""
         return """
-        Impacteers Mentorship Program
+        # Impacteers Mentorship Program
 
-        Experienced Mentors:
-        Yes! We've got mentors from Flipkart, Infosys, and early-stage startups who guide 1-on-1.
-        Sign up here to see mentor profiles and request a session.
-        
-        Career Path Guidance:
-        Based on your interests, we suggest exploring career clusters (like Design, Tech, Biz). A mentor can guide you deeper.
-        Please sign up to access our career path tool & mentorship sessions.
-        
-        Mentorship Availability:
-        Absolutely! From resume reviews to portfolio prep, our mentors are ready to help.
-        Sign up to browse them and book a free 15-minute intro call.
-        
-        Professional Communities:
-        You're in the right place! Check out our beginner-friendly UI/UX courses. These come with mentorship and portfolio support too.
-        
-        Career Transition Support:
-        You're not alone — and yes, that's exactly what our mentors are here for. Sign up to get paired with someone who understands your path.
-        
-        Data Science Mentorship:
-        That's a great move! We have experienced data science mentors who've successfully transitioned themselves. Sign up here to get connected and receive personalized guidance.
-        
-        Career Pivot Support:
-        Absolutely! Many of our mentors have pivoted into AI from non-tech backgrounds. Sign up and we'll connect you with someone who understands your journey.
-        
-        Tech Career Guidance:
-        You're not alone! We've got mentors who help with exactly that — figuring out your first step into tech. Sign up here and we'll match you with the right guide.
-        
-        AI Career Exploration:
-        Yes! Our AI experts can help you understand what it takes and how to begin. Sign up now to chat with someone who's already in the field.
+        **Experienced Mentors:**
+        Yes! We've got mentors from Flipkart, Infosys, and early-stage startups who guide 1-on-1. Sign up here to see mentor profiles and request a session: https://www.impacteers.com/mentor
+
+        **Career Path Guidance:**
+        Based on your interests, we suggest exploring career clusters (like Design, Tech, Biz). A mentor can guide you deeper. Please sign up to access our career path tool & mentorship sessions. https://www.impacteers.com/career-path https://www.impacteers.com/mentor
+
+        **Mentorship Availability:**
+        Absolutely! From resume reviews to portfolio prep, our mentors are ready to help. Sign up to browse them and book a free 15-minute intro call. https://www.impacteers.com/mentor
+
+        **Professional Communities:**
+        You're in the right place! Check out our beginner-friendly courses and community. These come with mentorship and portfolio support too. https://www.impacteers.com/community https://www.impacteers.com/mentor
+
+        **Career Transition Support:**
+        You're not alone — and yes, that's exactly what our mentors are here for. Sign up to get paired with someone who understands your path: https://www.impacteers.com/mentor
+
+        **Data Science Mentorship:**
+        That's a great move! We have experienced data science mentors who've successfully transitioned themselves. Sign up here to get connected and receive personalized guidance: https://www.impacteers.com/mentor
+
+        **Career Pivot Support:**
+        Absolutely! Many of our mentors have pivoted into AI from non-tech backgrounds. Sign up and we'll connect you with someone who understands your journey: https://www.impacteers.com/mentor
+
+        **Tech Career Guidance:**
+        You're not alone! We've got mentors who help with exactly that — figuring out your first step into tech. Sign up here and we'll match you with the right guide: https://www.impacteers.com/mentor
+
+        **AI Career Exploration:**
+        Yes! Our AI experts can help you understand what it takes and how to begin. Sign up now to chat with someone who's already in the field: https://www.impacteers.com/mentor
         """
 
     def _get_community_events_content(self) -> str:
-        """Complete community events content"""
+        """Complete community events content with URLs"""
         return """
-        Impacteers Community and Events
+        # Impacteers Community and Events
 
-        Competitions and Hackathons:
-        Yes! We regularly host exciting hackathons, quizzes, and other contests to help you learn and win. Sign up here to explore upcoming events.
-        
-        IIPL Tournament Information:
-        IIPL (Impacteers International Premier League) is an intra-college sports and career development tournament designed to empower students across Tamil Nadu. IIPL is an initiative by Impacteers to revolutionize how students engage with both sports and career-building.
-        The tournament runs from August 5th to September 21st and is designed for team spirit, leadership, and digital career readiness.
-        
-        Sports and Fun Events:
-        Yes! Alongside learning events, we host college sports leagues and cultural fests like IIPL — a mix of fun, competition, and networking. Sign up to be part of it.
-        
-        Student Networking:
-        Definitely! Our community is filled with ambitious students across India. Join discussions, collaborate on projects, or compete in quizzes together — just sign up here.
-        
-        Weekly Challenges:
-        We host weekly challenges, quizzes, and fun mini-events to keep learning engaging. You can participate by signing up here.
-        
-        Skill Showcase Opportunities:
-        Yes! Whether it's through hackathons, IIPL, or leaderboards, you'll find many ways to shine. Sign up and jump in.
-        
-        Resume Building Events:
-        Absolutely! Join our community projects, hackathons, and volunteer teams to build real-world experience. Sign up here to get started.
-        
-        Networking Platform:
-        Yes! Our Impacteers community is the perfect place to find peers, mentors, and collaborators. Sign up and say hi.
+        **Competitions and Hackathons:**
+        Yes! We regularly host exciting hackathons, quizzes, and other contests to help you learn and win. Sign up here to explore upcoming events: https://www.impacteers.com/events
+
+        **IIPL Tournament Information:**
+        IIPL (Impacteers International Premier League) is an intra-college sports and career development tournament designed to empower students across Tamil Nadu. IIPL is an initiative by Impacteers to revolutionize how students engage with both sports and career-building. The tournament runs from August 5th to September 21st and is designed for team spirit, leadership, and digital career readiness. https://www.impacteers.com/events
+
+        **Sports and Fun Events:**
+        Yes! Alongside learning events, we host college sports leagues and cultural fests like IIPL — a mix of fun, competition, and networking. Sign up to be part of it: https://www.impacteers.com/events https://www.impacteers.com/community
+
+        **Student Networking:**
+        Definitely! Our community is filled with ambitious students across India. Join discussions, collaborate on projects, or compete in quizzes together — just sign up here: https://www.impacteers.com/community
+
+        **Weekly Challenges:**
+        We host weekly challenges, quizzes, and fun mini-events to keep learning engaging. You can participate by signing up here: https://www.impacteers.com/events
+
+        **Skill Showcase Opportunities:**
+        Yes! Whether it's through hackathons, IIPL, or leaderboards, you'll find many ways to shine. Sign up and jump in: https://www.impacteers.com/events
+
+        **Resume Building Events:**
+        Absolutely! Join our community projects, hackathons, and volunteer teams to build real-world experience. Sign up here to get started: https://www.impacteers.com/community
+
+        **Networking Platform:**
+        Yes! Our Impacteers community is the perfect place to find peers, mentors, and collaborators. Sign up and say hi: https://www.impacteers.com/community
+
+        **Student Clubs:**
+        Join student clubs to connect with peers: https://www.impacteers.com/clubs
         """
 
     def _get_platform_features_content(self) -> str:
-        """Complete platform features content"""
+        """Complete platform features content with URLs"""
         return """
-        Impacteers Platform Features and Services
+        # Impacteers Platform Features and Services
         
-        AI Job Match Score:
-        Our AI Job Match Score instantly tells you how well your profile matches a job based on your skills, experience, and role requirements. Just sign up to unlock your score and boost your hiring chances.
-        
-        Interview Readiness Tools:
-        Take our Interview Readiness Quiz to check soft skills, role clarity, and test answers using our prep tools. Sign up here to get detailed feedback.
-        
-        Resume Builder:
-        Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together.
-        
-        Skill Assessment Platform:
-        Take our comprehensive skill assessment to identify your strengths and areas for improvement. Get personalized recommendations for courses and learning paths based on your results.
-        
-        Mentorship Network:
-        Connect with experienced professionals from Flipkart, Infosys, and early-stage startups who can guide your career journey. Get personalized advice, feedback, and support from mentors in your field.
-        
-        Course Platform:
-        Access a wide range of courses designed to accelerate your career growth. Learn from industry experts and gain certifications that matter to employers. Choose from technical skills, soft skills, and leadership development programs.
-        
-        Community Features:
-        Participate in networking events, workshops, and career fairs. Connect with like-minded professionals and expand your network. Join industry-specific groups and attend virtual and in-person events.
-        
-        Career Planning Tools:
+        **AI Job Match Score:**
+        Our AI Job Match Score instantly tells you how well your profile matches a job based on your skills, experience, and role requirements. Just sign up to unlock your score and boost your hiring chances. https://www.impacteers.com/skill-assessment
+
+        **Interview Readiness Tools:**
+        Take our Interview Readiness Quiz to check soft skills, role clarity, and test answers using our prep tools. Sign up here to get detailed feedback. https://www.impacteers.com/skill-assessment
+
+        **Resume Builder:**
+        Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together. https://www.impacteers.com/resume
+
+        **Cover Letter Generator:**
+        Create professional cover letters with our AI-powered tool: https://www.impacteers.com/coverletter
+
+        **Skill Assessment Platform:**
+        Take our comprehensive skill assessment to identify your strengths and areas for improvement. Get personalized recommendations for courses and learning paths based on your results. https://www.impacteers.com/skill-assessment
+
+        **Career Assessment Test AI:**
+        Get AI-powered career insights and recommendations: https://www.impacteers.com/career-assessment-test-ai
+
+        **Mentorship Network:**
+        Connect with experienced professionals from Flipkart, Infosys, and early-stage startups who can guide your career journey. Get personalized advice, feedback, and support from mentors in your field. https://www.impacteers.com/mentor
+
+        **Course Platform:**
+        Access a wide range of courses designed to accelerate your career growth. Learn from industry experts and gain certifications that matter to employers. Choose from technical skills, soft skills, and leadership development programs. https://www.impacteers.com/courses
+
+        **Learning Paths:**
+        Follow structured learning paths designed for your career goals: https://www.impacteers.com/learning-path
+
+        **Career Path Explorer:**
+        Explore different career paths and understand requirements: https://www.impacteers.com/career-path
+
+        **Community Features:**
+        Participate in networking events, workshops, and career fairs. Connect with like-minded professionals and expand your network. Join industry-specific groups and attend virtual and in-person events. https://www.impacteers.com/community
+
+        **Student Clubs:**
+        Connect with peers through student clubs: https://www.impacteers.com/clubs
+
+        **Events and Competitions:**
+        Join hackathons, competitions, and networking events: https://www.impacteers.com/events
+
+        **Career Planning Tools:**
         Work with career counselors to create a personalized career plan. Set goals, track progress, and adjust your strategy as needed. Explore different career paths and understand the requirements for each.
-        
-        Job Search Platform:
-        Discover curated job openings from top companies across various industries. Our AI-powered matching system connects you with roles that align with your skills and career goals. Filter by location, salary, experience level, and industry to find your perfect match.
+
+        **Job Search Platform:**
+        Discover curated job openings from top companies across various industries. Our AI-powered matching system connects you with roles that align with your skills and career goals. Filter by location, salary, experience level, and industry to find your perfect match. https://www.impacteers.com/jobs
         """
 
     def _process_faq_document(self, doc_input: DocumentInput) -> List[Dict[str, Any]]:
@@ -615,9 +670,8 @@ class DocumentProcessor:
                 "document_type": "generic"
             }
         }]
-
-    def create_semantic_chunks(self, documents: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Create semantic chunks based on content structure"""
+    def create_overlapping_chunks(self, documents: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Create overlapping chunks using RecursiveCharacterTextSplitter"""
         chunks = []
         
         for doc in documents:
@@ -628,10 +682,10 @@ class DocumentProcessor:
                 logger.warning(f"Document content too short, skipping: {content[:50]}...")
                 continue
             
-            # Try to identify semantic boundaries
-            semantic_chunks = self._identify_semantic_sections(content)
+            # Use the text splitter to create overlapping chunks
+            text_chunks = self.text_splitter.split_text(content)
             
-            for i, chunk_text in enumerate(semantic_chunks):
+            for i, chunk_text in enumerate(text_chunks):
                 if len(chunk_text.strip()) < 20:
                     continue
                     
@@ -640,72 +694,17 @@ class DocumentProcessor:
                     "metadata": {
                         **doc["metadata"],
                         "chunk_index": i,
-                        "total_chunks": len(semantic_chunks),
+                        "total_chunks": len(text_chunks),
                         "chunk_length": len(chunk_text.strip()),
-                        "chunking_method": "semantic"
+                        "chunking_method": "overlapping"
                     }
                 }
                 chunks.append(chunk)
         
+        logger.info(f"Created {len(chunks)} overlapping chunks")
         return chunks
 
-    def _identify_semantic_sections(self, text: str) -> List[str]:
-        """Identify semantic sections in text"""
-        # Enhanced approach: split by meaningful boundaries
-        sections = []
-        current_section = ""
-        
-        lines = text.split('\n')
-        
-        for line in lines:
-            line = line.strip()
-            
-            # Skip empty lines
-            if not line:
-                if current_section.strip():
-                    current_section += '\n'
-                continue
-            
-            # Check if line is a header or major section boundary
-            if (line.endswith(':') or 
-                (line.isupper() and len(line) > 3) or
-                any(keyword in line.lower() for keyword in [
-                    'features', 'benefits', 'how to', 'steps', 'guide', 
-                    'services', 'opportunities', 'iipl', 'august', 'september',
-                    'flipkart', 'infosys', 'ai job match', 'interview readiness'
-                ]) or
-                line.startswith('Category') or
-                line.startswith('User Query') or
-                line.startswith('Response')):
-                
-                # Save previous section if it exists and is substantial
-                if current_section.strip() and len(current_section.strip()) >= 100:
-                    sections.append(current_section.strip())
-                
-                # Start new section with header
-                current_section = line + '\n'
-            else:
-                current_section += line + '\n'
-        
-        # Add the last section
-        if current_section.strip() and len(current_section.strip()) >= 100:
-            sections.append(current_section.strip())
-        
-        # If no semantic sections found or sections are too few, fall back to regular chunking
-        if len(sections) <= 1:
-            return self.text_splitter.split_text(text)
-        
-        # Ensure sections are not too long
-        final_sections = []
-        for section in sections:
-            if len(section) > settings.chunk_size * 1.5:
-                # Split long sections further
-                subsections = self.text_splitter.split_text(section)
-                final_sections.extend(subsections)
-            else:
-                final_sections.append(section)
-        
-        return final_sections if final_sections else self.text_splitter.split_text(text)
+
 
 
 class IngestionService:
@@ -768,7 +767,7 @@ class IngestionService:
             processed_docs = self.processor.process_documents(state["documents"])
             
             # Use semantic chunking for better results
-            state["processed_chunks"] = self.processor.create_semantic_chunks(processed_docs)
+            state["processed_chunks"] = self.processor.create_overlapping_chunks(processed_docs)
             
             # Remove original documents to save memory
             state.pop("documents", None)
@@ -915,10 +914,10 @@ class IngestionService:
                 metadata={"source": "knowledge_base", "filename": "feature.pdf"}
             ),
             DocumentInput(
-                content="rag_knowledge.pdf", 
+                content="updated_rag_knowledge.pdf", 
                 document_type="manual", 
                 category="job_search_opportunities", 
-                metadata={"source": "knowledge_base", "filename": "rag_knowledge.pdf"}
+                metadata={"source": "knowledge_base", "filename": "updated_rag_knowledge.pdf"}
             )
         ]
 

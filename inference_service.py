@@ -313,7 +313,7 @@ class ResponseTemplateManager:
         return ""
 
 class ResponseGenerator:
-    """Generate responses using LLM with template fallback and memory awareness"""
+    """Generate responses using LLM with knowledge base priority and memory awareness"""
     
     def __init__(self, llm: ChatVertexAI):
         self.llm = llm
@@ -323,15 +323,16 @@ class ResponseGenerator:
 Important Guidelines:
 1. ALWAYS check conversation history first before responding
 2. If user asks about previous conversations, conversation history, or "what did we discuss", ALWAYS reference the actual conversation history provided
-3. Use specific information from context when available 
+3. Use specific information from context when available - PRIORITIZE CONTEXT OVER TEMPLATES
 4. Always encourage users to sign up for personalized features
-5. Provide specific, actionable advice
+5. Provide specific, actionable advice with proper URLs from the context
 6. If context doesn't contain relevant information, acknowledge this and provide general guidance
 7. Keep responses concise but informative
 8. Focus on Impacteers' features: jobs, courses, assessments, mentorship, and community
 9. For specific queries about IIPL, mention it runs from August 5th to September 21st
 10. For mentor queries, mention Flipkart, Infosys, and early-stage startups
 11. For job fit queries, mention AI Job Match Score
+12. ALWAYS use the actual URLs from the context when they are provided
 
 MEMORY QUERIES HANDLING:
 - If user asks about "conversation history", "what we discussed", "previous conversation", or similar:
@@ -348,7 +349,7 @@ User Question: {query}
 Response:"""
     
     async def generate_response(self, query: str, context: str, history: List[Dict]) -> str:
-        """Generate response with enhanced memory awareness"""
+        """Generate response with knowledge base priority and enhanced memory awareness"""
         
         # Check for memory-related queries FIRST
         memory_keywords = [
@@ -365,32 +366,40 @@ Response:"""
             logger.info(f"Memory query detected: {query}")
             return await self._handle_memory_query(query, history)
         
-        # Try template matching for non-memory queries
+        # PRIORITY 1: Use knowledge base content if available and relevant
+        if context and len(context.strip()) > 50:  # We have substantial context
+            logger.info(f"Using knowledge base content for query: {query[:50]}...")
+            
+            # Format conversation history for LLM
+            history_text = ""
+            if history:
+                for conv in history[-3:]:  # Last 3 conversations for context
+                    history_text += f"User: {conv['user_query']}\nAssistant: {conv['response']}\n\n"
+            
+            # Create prompt with knowledge base context
+            prompt = PromptTemplate(
+                template=self.system_prompt,
+                input_variables=["context", "history", "query"]
+            )
+            
+            try:
+                response = await self.llm.ainvoke(
+                    prompt.format(context=context, history=history_text, query=query)
+                )
+                return response.content.strip()
+            except Exception as e:
+                logger.error(f"LLM response generation failed: {e}")
+                # Fall through to template fallback
+        
+        # PRIORITY 2: Template fallback only if no good context available
         template_response = self.template_manager.get_template_response(query)
-        if template_response and not is_memory_query:
-            logger.info(f"Using template response for query: {query[:50]}...")
+        if template_response:
+            logger.info(f"Using template fallback for query: {query[:50]}...")
             return template_response
         
-        # Format conversation history for LLM
-        history_text = ""
-        if history:
-            for conv in history[-3:]:  # Last 3 conversations for context
-                history_text += f"User: {conv['user_query']}\nAssistant: {conv['response']}\n\n"
-        
-        # Create prompt
-        prompt = PromptTemplate(
-            template=self.system_prompt,
-            input_variables=["context", "history", "query"]
-        )
-        
-        try:
-            response = await self.llm.ainvoke(
-                prompt.format(context=context, history=history_text, query=query)
-            )
-            return response.content.strip()
-        except Exception as e:
-            logger.error(f"Response generation failed: {e}")
-            return "I apologize, but I'm having trouble generating a response right now. Please try again or sign up to explore Impacteers' features!"
+        # PRIORITY 3: Generic fallback
+        logger.info(f"Using generic fallback for query: {query[:50]}...")
+        return "I apologize, but I don't have specific information about that right now. Please sign up to explore Impacteers' features including jobs, courses, skill assessments, mentorship, and community events!"
     
     async def _handle_memory_query(self, query: str, history: List[Dict]) -> str:
         """Handle queries about conversation history"""
@@ -410,8 +419,6 @@ Response:"""
         conversation_summary += "Is there anything specific from our conversation you'd like me to clarify or expand on?"
         
         return conversation_summary
-
-
 class InferenceService:
     """LangGraph-based inference service with enhanced response accuracy"""
     
