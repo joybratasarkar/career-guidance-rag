@@ -46,7 +46,9 @@ class Settings(BaseSettings):
         default="sentence-transformers/all-MiniLM-L6-V2",
         description="Embedding model name"
     )
-    llm_temperature: float = Field(default=0.2, description="LLM temperature")
+    llm_temperature: float = Field(default=0.1, description="LLM temperature (lower for faster, more deterministic responses)")
+    llm_max_tokens: int = Field(default=256, description="Max tokens for faster responses")
+    llm_timeout: int = Field(default=10, description="LLM request timeout in seconds")
     
     # RAG Configuration
     chunk_size: int = Field(default=800, description="Text chunk size")

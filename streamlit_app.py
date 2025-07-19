@@ -22,8 +22,8 @@ st.set_page_config(
 )
 
 # Configuration
-BACKEND_URL = st.secrets.get("BACKEND_URL", "http://localhost:8000")
-WEBSOCKET_URL = st.secrets.get("WEBSOCKET_URL", "ws://localhost:8000")
+BACKEND_URL = st.secrets.get("BACKEND_URL", "http://localhost:6000")
+WEBSOCKET_URL = st.secrets.get("WEBSOCKET_URL", "ws://localhost:6000")
 
 class ChatWebSocket:
     def __init__(self, user_id: str, message_queue: Queue):
