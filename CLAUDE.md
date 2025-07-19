@@ -5,41 +5,61 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Core Commands
 
 ### Development
-- **Start API server**: `python main.py` or `uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+- **Start complete system**: `./deploy.sh` (recommended - all services)
+- **Start backend only**: `python main.py` or `uvicorn main:app --reload --host 0.0.0.0 --port 8000`
+- **Start frontend only**: `streamlit run streamlit_app.py --server.port 8501`
 - **CLI interface**: `python cli.py <command>` (full-demo, setup, chat, test, evaluate, status)
 - **Install dependencies**: `pip install -r requirements.txt`
 - **Run tests**: `pytest` or `pytest --cov=. --cov-report=html`
 - **System testing**: `python test_system.py`
 
-### Docker
-- **Build and run**: `docker-compose up -d`
-- **View logs**: `docker-compose logs -f impacteers-rag`
+### Docker Multi-Service Deployment
+- **Complete deployment**: `./deploy.sh` (includes frontend, backend, MongoDB, Redis)
+- **Manual deployment**: `docker-compose up --build -d`
+- **View logs**: `docker-compose logs -f backend` or `docker-compose logs -f frontend`
 - **Check status**: `docker-compose ps`
+- **Individual service**: `docker-compose up backend` or `docker-compose up frontend`
+
+### Access Points
+- **Streamlit Chat UI**: http://localhost:8501 (primary interface)
+- **FastAPI Backend**: http://localhost:8000 (API endpoints)
+- **API Documentation**: http://localhost:8000/docs
+- **MongoDB UI**: http://localhost:8081 (admin/admin)
 
 ### Quick Setup
-- **Full demo with setup**: `python cli.py full-demo`
-- **API quick setup**: `curl -X POST "http://localhost:8000/setup"`
+- **Complete setup**: `./deploy.sh`
+- **API setup only**: `curl -X POST "http://localhost:8000/setup"`
+- **Frontend setup**: Open http://localhost:8501 and start chatting
 
 ## Architecture Overview
 
-This is an Impacteers RAG (Retrieval-Augmented Generation) system built with FastAPI, LangGraph, and Google Vertex AI.
+This is an Impacteers RAG chat system with Streamlit frontend, FastAPI backend, Redis memory, and Google Vertex AI.
 
-### Three-Phase Architecture
-1. **Ingestion Pipeline** (`ingestion_service.py`): Document processing, chunking, embedding, and storage
-2. **Inference Pipeline** (`inference_service.py`): Query processing, retrieval, context building, and response generation
+### Frontend + Backend Architecture
+- **Streamlit Frontend** (`streamlit_app.py`): Beautiful chat UI with WebSocket and REST support
+- **FastAPI Backend** (`main.py`): WebSocket + REST API endpoints with multi-user support
+- **Redis Memory** (`redis_manager.py`): 1-day TTL conversation storage per user_id
+- **MongoDB Storage** (`database.py`): Document and evaluation persistent storage
+
+### Three-Phase Processing
+1. **Ingestion Pipeline** (`ingestion_service.py`): Document processing, chunking, embedding, MongoDB storage
+2. **Inference Pipeline** (`inference_service.py`): Redis conversation loading, query processing, retrieval, response generation, Redis saving
 3. **Evaluation Pipeline** (`evaluation_service.py`): Retrieval and generation quality assessment
 
-### Core Services
-- **DatabaseManager** (`database.py`): MongoDB operations with async Motor client
-- **SharedEmbeddingService** (`embedding_service.py`): Centralized embedding model management
-- **FastAPI Application** (`main.py`): REST API and WebSocket endpoints
+### Multi-User Chat System
+- **WebSocket Rooms**: Each user_id gets isolated chat room (`/ws/{user_id}`)
+- **Conversation Isolation**: Redis keys `conversations:{user_id}` with 1-day TTL
+- **Real-time Communication**: WebSocket for instant messaging, REST fallback
+- **Session Management**: Persistent conversations across disconnections
 
 ### Key Technologies
+- **Streamlit**: Frontend chat interface with real-time updates
+- **WebSocket**: Real-time bidirectional communication
+- **Redis**: Fast conversation memory with automatic expiration
 - **LangGraph**: State-based processing with checkpointing
-- **Google Vertex AI**: Gemini 2.0 Flash (LLM) + Embedding Gecko models
-- **MongoDB**: Vector storage with cosine similarity search
-- **FastAPI**: Async REST API with WebSocket support
-- **Sentence Transformers**: Local embedding fallback
+- **Google Vertex AI**: Gemini 2.0 Flash (LLM) + Embedding models
+- **MongoDB**: Document vector storage with hybrid search
+- **FastAPI**: Async WebSocket + REST API
 
 ## Configuration
 

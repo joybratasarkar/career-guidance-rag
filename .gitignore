@@ -1,11 +1,283 @@
-# .gitignore
-venv/
+# Python
 __pycache__/
-*.pyc
-*.pdf
-*.env
-*.log
-./xooper.json
-./venv
-venv
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+pyvenv.cfg
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+
+# Google Cloud Credentials & API Keys
 xooper.json
+service-account-*.json
+gcp-credentials.json
+google-credentials.json
+credentials.json
+*-credentials.json
+*.key.json
+
+# Allow certain JSON config files
+!package.json
+!package-lock.json
+!tsconfig.json
+!.claude/settings.json
+
+# Database & Cache
+*.db
+*.sqlite
+*.sqlite3
+redis-data/
+mongodb-data/
+dumps/
+
+# Logs
+logs/
+*.log
+log/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Streamlit
+.streamlit/secrets.toml
+.streamlit/credentials.toml
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Testing
+.coverage
+.pytest_cache/
+.tox/
+htmlcov/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Model files & Large datasets
+*.pkl
+*.pickle
+*.model
+*.bin
+*.h5
+*.weights
+models/
+data/
+datasets/
+embeddings/
+vectors/
+
+# Node.js (if any frontend assets)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Local configuration files
+config_local.py
+local_settings.py
+settings_local.py
+
+# Certificate files
+*.pem
+*.key
+*.crt
+*.cert
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Documentation build
+docs/_build/
+docs/build/
+
+# Profiling data
+.prof
+
+# Redis dump files
+dump.rdb
+
+# MongoDB dump files
+mongodump/
+
+# Pytest
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+
+# Translations
+*.mo
+*.pot
+
+# Local development files
+.local/
+local/
+
+# Streamlit cache
+.streamlit/
+
+# FastAPI uploads
+uploads/
+static/uploads/
+
+# Ignore personal notes and TODO files
+TODO.md
+NOTES.md
+notes.txt
+todo.txt
+
+# Ignore compiled Python files
+*.pyc
+*.pyo
+
+# Ignore editor swap files
+*.swp
+*.swo
+
+# Ignore macOS metadata
+.DS_Store
+
+# Ignore Windows metadata
+Thumbs.db
+ehthumbs.db
+
+# Ignore Linux metadata
+*~
+
+# Custom ignores for this project
+evaluation_results/
+test_outputs/
+sample_data/
+demo_data/
+user_uploads/
+*.pdf
+
+# Don't commit actual Streamlit secrets (but keep template)
+.streamlit/secrets.toml
+
+# Don't commit Docker volumes
+redis_data/
+mongodb_data/
+
+# Don't commit actual environment file (but keep template)
+.env
+
+# Keep important config templates
+!.streamlit/config.toml
+!.env.example
+!docker-compose.yml

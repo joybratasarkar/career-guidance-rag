@@ -1,31 +1,36 @@
-# Core FastAPI and async support
-fastapi
-uvicorn[standard]
+# Core FastAPI Backend
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
 pydantic>=2.0.0
 pydantic-settings
 python-multipart
 
+# Streamlit Frontend
+streamlit>=1.28.0
+websockets>=11.0.0
+requests>=2.31.0
+
 # CLI support
 click
 
-# LangGraph and LangChain - let pip resolve versions
+# LangGraph and LangChain
 langgraph
 langchain
 langchain-google-vertexai
 langchain-text-splitters
 
-# Database
-pymongo
-motor
+# Database Storage
+pymongo>=4.6.0
+motor>=3.3.0
 
-# Redis for conversation storage
+# Redis Conversation Memory
 redis[hiredis]>=4.5.0
 
 # Google Cloud AI
 google-cloud-aiplatform
 google-auth
 
-# Machine Learning - flexible versions
+# Machine Learning
 numpy
 scikit-learn
 sentence-transformers
@@ -38,6 +43,6 @@ pytest
 pytest-asyncio
 httpx
 
-# Build tools for Python 3.12
+# Build tools
 setuptools
 wheel

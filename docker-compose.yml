@@ -1,27 +1,57 @@
-# docker-compose.yml
+# docker-compose.yml for Impacteers RAG System
 version: '3.8'
 
 services:
-  impacteers-rag:
-    build: .
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
     ports:
       - "8000:8000"
     environment:
-      - MONGO_URI=${MONGO_URI}
-      - PROJECT_ID=${PROJECT_ID}
-      - LOCATION=${LOCATION}
+      - MONGO_URI=${MONGO_URI:-mongodb://admin:password@mongodb:27017/impacteers_rag?authSource=admin}
+      - PROJECT_ID=${PROJECT_ID:-xooper-450012}
+      - LOCATION=${LOCATION:-us-central1}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - LOG_LEVEL=INFO
     volumes:
       - ./xooper.json:/app/xooper.json:ro
+      - ./.env:/app/.env:ro
     depends_on:
       - mongodb
+      - redis
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - app-network
 
+  # Streamlit Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+      - WEBSOCKET_URL=ws://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app-network
+
+  # MongoDB Database
   mongodb:
     image: mongo:7.0
     ports:
@@ -29,10 +59,31 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: impacteers_rag
     volumes:
       - mongodb_data:/data/db
     restart: unless-stopped
+    networks:
+      - app-network
 
+  # Redis for conversation storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app-network
+
+  # MongoDB Express (optional - for database management)
   mongo-express:
     image: mongo-express:latest
     ports:
@@ -41,9 +92,18 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: admin
       ME_CONFIG_MONGODB_ADMINPASSWORD: password
       ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
     depends_on:
       - mongodb
     restart: unless-stopped
+    networks:
+      - app-network
 
 volumes:
   mongodb_data:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge
