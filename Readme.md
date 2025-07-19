@@ -325,7 +325,7 @@ LOCATION=us-central1
 GOOGLE_CREDENTIALS_PATH=./xooper.json
 
 # Database Configuration  
-MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/impacteers_rag
+MONGO_URI=mongodb+srv://user:*****.mongodb.net/*******
 REDIS_URL=redis://username:password@host:port/0
 
 # Model Configuration
