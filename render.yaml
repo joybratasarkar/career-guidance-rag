@@ -1,0 +1,78 @@
+services:
+  # Backend FastAPI Service
+  - type: web
+    name: impacteers-backend
+    env: docker
+    dockerfilePath: ./Dockerfile.backend
+    plan: free
+    region: oregon
+    envVars:
+      - key: PROJECT_ID
+        value: xooper-450012
+      - key: LOCATION  
+        value: us-central1
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: ./xooper.json
+      - key: MONGO_URI
+        fromService:
+          type: pserv
+          name: impacteers-mongodb
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: impacteers-redis
+          property: connectionString
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: 8000
+      - key: LOG_LEVEL
+        value: INFO
+    healthCheckPath: /health
+
+  # Frontend Streamlit Service  
+  - type: web
+    name: impacteers-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile.frontend
+    plan: free
+    region: oregon
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: impacteers-backend
+          property: host
+      - key: STREAMLIT_SERVER_PORT
+        value: 8501
+      - key: STREAMLIT_SERVER_ADDRESS
+        value: 0.0.0.0
+    healthCheckPath: /_stcore/health
+
+  # MongoDB Database
+  - type: pserv
+    name: impacteers-mongodb
+    env: docker
+    dockerCommand: mongod --bind_ip_all
+    dockerImage: mongo:7.0
+    plan: free
+    region: oregon
+    disk:
+      name: mongodb-data
+      mountPath: /data/db
+      sizeGB: 1
+    envVars:
+      - key: MONGO_INITDB_ROOT_USERNAME
+        value: admin
+      - key: MONGO_INITDB_ROOT_PASSWORD
+        generateValue: true
+      - key: MONGO_INITDB_DATABASE
+        value: impacteers_rag
+
+  # Redis for Conversations
+  - type: redis
+    name: impacteers-redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
