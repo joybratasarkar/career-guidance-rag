@@ -19,7 +19,7 @@ MONGO_URI = os.getenv("MONGO_URI") # Note: os.getenv returns strings, convert if
 class Settings(BaseSettings):
     """Application settings using Pydantic BaseSettings"""
     def get_embedding_model(
-        model_name: str = "sentence-transformers/all-MiniLM-L6-V2"
+        model_name: str = "sentence-transformers/all-mpnet-base-v2"
     ) -> SentenceTransformer:
         """
         Return a SentenceTransformer embedding model.
@@ -45,8 +45,8 @@ class Settings(BaseSettings):
     # Model Configuration
     llm_model: str = Field(default="gemini-2.0-flash-001", description="LLM model name")
     embedding_model: str = Field(
-        default="sentence-transformers/all-MiniLM-L6-V2",
-        description="Embedding model name"
+        default="sentence-transformers/all-mpnet-base-v2",
+        description="Embedding model name - upgraded for better quality"
     )
     llm_temperature: float = Field(default=0.1, description="LLM temperature (lower for faster, more deterministic responses)")
     llm_max_tokens: int = Field(default=256, description="Max tokens for faster responses")

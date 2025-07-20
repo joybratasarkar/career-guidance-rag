@@ -33,7 +33,9 @@ google-auth
 # Machine Learning
 numpy
 scikit-learn
-sentence-transformers
+sentence-transformers>=2.2.2
+transformers>=4.21.0
+torch
 
 # Utilities
 python-dotenv

@@ -6,6 +6,8 @@ langchain
 langchain-google-vertexai
 pymongo
 redis
-sentence-transformers
+sentence-transformers>=2.2.2
+transformers>=4.21.0
+torch
 pydantic
 typing-extensions
