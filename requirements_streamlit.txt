@@ -1,0 +1,11 @@
+streamlit
+requests
+python-dotenv
+google-cloud-aiplatform
+langchain
+langchain-google-vertexai
+pymongo
+redis
+sentence-transformers
+pydantic
+typing-extensions
