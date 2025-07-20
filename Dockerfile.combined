@@ -1,0 +1,48 @@
+# Combined Dockerfile for Frontend + Backend
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy all application code
+COPY . .
+
+# Create supervisor configuration
+RUN echo '[supervisord]' > /etc/supervisor/supervisord.conf && \
+    echo 'nodaemon=true' >> /etc/supervisor/supervisord.conf && \
+    echo 'user=root' >> /etc/supervisor/supervisord.conf && \
+    echo '' >> /etc/supervisor/supervisord.conf && \
+    echo '[program:backend]' >> /etc/supervisor/supervisord.conf && \
+    echo 'command=uvicorn main:app --host 0.0.0.0 --port 8000' >> /etc/supervisor/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/supervisord.conf && \
+    echo '' >> /etc/supervisor/supervisord.conf && \
+    echo '[program:frontend]' >> /etc/supervisor/supervisord.conf && \
+    echo 'command=streamlit run streamlit_simple.py --server.port 8501 --server.address 0.0.0.0' >> /etc/supervisor/supervisord.conf && \
+    echo 'autostart=true' >> /etc/supervisor/supervisord.conf && \
+    echo 'autorestart=true' >> /etc/supervisor/supervisord.conf
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+
+# Expose ports
+EXPOSE 8000 8501
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/health && curl -f http://localhost:8501/_stcore/health || exit 1
+
+# Start supervisor to run both services
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
