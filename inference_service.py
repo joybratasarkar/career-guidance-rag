@@ -49,7 +49,7 @@ def convert_all_types_to_serializable(obj: Any) -> Any:
 
 
 class InferenceState(TypedDict):
-    user_id: str  # Changed from session_id to user_id
+    session_id: str  # Use session_id consistently
     user_query: str
     processed_query: str
     retrieved_docs: List[Dict[str, Any]]
@@ -177,176 +177,63 @@ class ContextBuilder:
         return "\n\n".join(context_parts)
 
 
-class ResponseTemplateManager:
-    """Manage response templates for specific queries"""
-    
-    def __init__(self):
-        self.templates = {
-            # Job Search Templates
-            "job_search_general": "Before exploring job opportunities, please sign up to get personalised job suggestions. You can browse open roles here: Jobs.",
-            "job_search_latest": "Please create your Impacteers account to access curated job listings and opportunities handpicked for your profile. Visit: [jobs link]",
-            "remote_jobs": "Discover a wide range of remote roles tailored to your skills. Signup to unlock personalized remote job recommendations. Check out: [jobs link]",
-            "jobs_bangalore": "Sure! Here are jobs available in Bangalore: Jobs in Bangalore. Before applying, we recommend signing up for tailored recommendations.",
-            "apple_jobs": "Great choice! Here's what we found related to Apple: Apple Jobs. Before applying, take a skill assessment to evaluate your strengths or check our courses to stand out.",
-            "internships_freshers": "Yes! We've curated internships perfect for freshers. First, sign up to unlock personalised matches: Internships link",
-            "interview_calls": "That can be frustrating! Have you tried our resume builder and career assessments to strengthen your profile? Let's work on that together.",
-            "tech_jobs": "Explore the latest tech roles on Impacteers. To enhance your chances, consider our tech skill certifications and get matched to leading employers: [courses link], [jobs link]",
-            "final_year_jobs": "Yes, many companies offer pre-placement roles and fresher openings. [Sign up here](#) to get personalized job suggestions that align with your graduation timeline.",
-            "trending_jobs": "Currently trending: data analysis, UI/UX, customer success, and full-stack roles. Sign up to explore more and get matched to hot openings.",
-            "content_writing_jobs": "Roles like content strategist, copywriter, SEO writer, and blog manager could be a fit. Sign up to get content-specific job alerts.",
-            "highest_paying_freshers": "Roles in sales engineering, product design, and data analytics offer great starting packages. Sign up to compare salaries and apply now.",
-            "job_match_score": "Great question! We use an AI Job Match Score that instantly tells you how well your profile matches a job — based on your skills, experience, and role requirements. Just sign up to unlock your score and boost your hiring chances.",
-            
-            # Courses Templates
-            "courses_general": "We offer curated courses designed for career acceleration in diverse fields. Explore personalized learning paths and unlock new opportunities: [courses link]",
-            "data_science_courses": "We've curated top-rated data science courses from trusted sources. Explore them here: Data Science Courses. For a smarter start, take our skill check first so we can match you better.",
-            "coding_courses": "Impacteers hosts beginner to advanced coding programs with mentor support and real-world projects. Get started here: [courses link]",
-            "product_management_courses": "Awesome goal! Start by checking our recommended Product Management courses, and if you'd like, take our skill assessment to know where to begin.",
-            "uiux_courses": "You're in the right place! Check out our beginner-friendly UI/UX courses. These come with mentorship and portfolio support too.",
-            "free_courses": "Absolutely. Here's a list of top free courses: Free Courses. And if you'd like a customized plan, take a quick skill check.",
-            "courses_free": "Many of our courses are free or low-cost to help you learn without limits. Check them out here: [courses link]. To begin, sign up and personalize your experience!",
-            "data_analysis_courses": "Absolutely! We offer practical, career-aligned courses in data analysis. Start here: [courses link]. Sign up to track your progress and unlock full access!",
-            "failed_exams": "Absolutely. Impacteers is built for people at all learning stages. Whether you passed or failed, your growth starts here. Browse beginner-friendly courses: [link]. Signing up helps us guide you better!",
-            "short_courses": "Totally understand! We offer short-format, high-impact courses that fit into a busy schedule. Explore them here: [courses link] — just sign up to access the right ones for your needs!",
-            
-            # Skill Assessment Templates
-            "skills_unknown": "No worries! Most people discover hidden strengths through our assessment — like communication, logic, or leadership traits. Take our free Skill Check by signing up — we'll guide you step-by-step.",
-            "interview_readiness": "Let's find out! We check soft skills, role clarity, and test answers using our prep tools. Sign up here to take the Interview Readiness Quiz and get detailed feedback.",
-            "skill_testing": "Yup! We assess problem-solving, communication, and domain-specific skills. It's quick and free — just sign up to get started and see where you stand.",
-            "test_before_course": "Not required, but highly recommended! Our skill assessment helps you choose the best course for your current level. Try it here: [link] — and sign up to get started!",
-            "skills_confident": "Even if you're confident, our test can help match you to roles or courses you might not have considered. It's free, quick, and surprisingly insightful. Try it here: [assessment link]. Sign-up is required.",
-            "assessment_accuracy": "They're designed by career experts and educators to give you real insight into your strengths. It's not just for fun — it's a stepping stone to smarter choices. Try it here: [link], once you sign up.",
-            
-            # Mentorship Templates  
-            "mentorship_experienced": "Yes! We've got mentors from Flipkart, Infosys, and early-stage startups who guide 1-on-1. Sign up here to see mentor profiles and request a session",
-            "career_path_help": "Based on your interests, we suggest exploring career clusters (like Design, Tech, Biz). A mentor can guide you deeper. Please sign up to access our career path tool & mentorship sessions.",
-            "mentorship_available": "Absolutely! From resume reviews to portfolio prep, our mentors are ready to help. Sign up to browse them and book a free 15-minute intro call.",
-            "professional_communities": "You're in the right place! Check out our beginner-friendly UI/UX courses. These come with mentorship and portfolio support too.",
-            "career_stuck": "You're not alone — and yes, that's exactly what our mentors are here for. Sign up to get paired with someone who understands your path: [mentors link].",
-            "data_science_mentor": "That's a great move! We have experienced data science mentors who've successfully transitioned themselves. Sign up here to get connected and receive personalized guidance: [mentorship link].",
-            "sales_to_ai": "Absolutely! Many of our mentors have pivoted into AI from non-tech backgrounds. Sign up and we'll connect you with someone who understands your journey: [mentorship link].",
-            "tech_start": "You're not alone! We've got mentors who help with exactly that — figuring out your first step into tech. Sign up here and we'll match you with the right guide: [mentorship link].",
-            "ai_mentor": "Yes! Our AI experts can help you understand what it takes and how to begin. Sign up now to chat with someone who's already in the field: [mentorship link].",
-            
-            # Community Events Templates
-            "hackathons": "Yes! We regularly host exciting hackathons, quizzes, and other contests to help you learn and win. Sign up here to explore upcoming events: [events link].",
-            "iipl_info": "IIPL (Impacteers International Premier League) is an intra-college sports and career development tournament designed to empower students across Tamil Nadu. IIPL is an initiative by Impacteers to revolutionize how students engage with both sports and career-building. The tournament runs from August 5th to September 21st and is designed for team spirit, leadership, and digital career readiness.",
-            "sports_events": "Yes! Alongside learning events, we host college sports leagues and cultural fests like IIPL — a mix of fun, competition, and networking. Sign up to be part of it: [community/events link]",
-            "student_connect": "Definitely! Our community is filled with ambitious students across India. Join discussions, collaborate on projects, or compete in quizzes together — just sign up here: [community link].",
-            "weekly_challenges": "We host weekly challenges, quizzes, and fun mini-events to keep learning engaging. You can participate by signing up here: [events/challenges link].",
-            "showcase_skills": "Yes! Whether it's through hackathons, IIPL, or leaderboards, you'll find many ways to shine. Sign up and jump in: [events link].",
-            "resume_building": "Absolutely! Join our community projects, hackathons, and volunteer teams to build real-world experience. Sign up here to get started: [community link].",
-            "networking": "Yes! Our Impacteers community is the perfect place to find peers, mentors, and collaborators. Sign up and say hi: [community link]."
-        }
-        
-        # Query patterns for template matching
-        self.query_patterns = {
-            r"(?i).*looking for.*job.*": "job_search_general",
-            r"(?i).*jobs.*available.*": "job_search_general", 
-            r"(?i).*latest.*job.*opening.*": "job_search_latest",
-            r"(?i).*remote.*job.*": "remote_jobs",
-            r"(?i).*jobs.*bangalore.*": "jobs_bangalore",
-            r"(?i).*work.*apple.*": "apple_jobs",
-            r"(?i).*internship.*fresh.*": "internships_freshers",
-            r"(?i).*not getting.*interview.*": "interview_calls",
-            r"(?i).*tech.*job.*": "tech_jobs",
-            r"(?i).*final year.*job.*": "final_year_jobs",
-            r"(?i).*trending.*job.*": "trending_jobs",
-            r"(?i).*content writing.*job.*": "content_writing_jobs",
-            r"(?i).*highest paying.*fresh.*": "highest_paying_freshers",
-            r"(?i).*good fit.*job.*": "job_match_score",
-            
-            r"(?i).*upskill.*": "courses_general",
-            r"(?i).*courses.*offer.*": "courses_general",
-            r"(?i).*data science.*course.*": "data_science_courses",
-            r"(?i).*learn.*coding.*": "coding_courses",
-            r"(?i).*product management.*": "product_management_courses",
-            r"(?i).*ui.*ux.*": "uiux_courses",
-            r"(?i).*free.*course.*": "free_courses",
-            r"(?i).*courses.*free.*": "courses_free",
-            r"(?i).*data analysis.*": "data_analysis_courses",
-            r"(?i).*failed.*exam.*": "failed_exams",
-            r"(?i).*short.*course.*": "short_courses",
-            
-            r"(?i).*don't know.*skill.*": "skills_unknown",
-            r"(?i).*ready.*interview.*": "interview_readiness",
-            r"(?i).*test.*skill.*": "skill_testing",
-            r"(?i).*test.*before.*course.*": "test_before_course",
-            r"(?i).*already know.*skill.*": "skills_confident",
-            r"(?i).*assessment.*accurate.*": "assessment_accuracy",
-            
-            r"(?i).*help.*experienced.*": "mentorship_experienced",
-            r"(?i).*career path.*": "career_path_help",
-            r"(?i).*mentorship.*available.*": "mentorship_available",
-            r"(?i).*professional.*communit.*": "professional_communities",
-            r"(?i).*stuck.*career.*": "career_stuck",
-            r"(?i).*data science.*mentor.*": "data_science_mentor",
-            r"(?i).*sales.*ai.*": "sales_to_ai",
-            r"(?i).*tech.*start.*": "tech_start",
-            r"(?i).*ai.*mentor.*": "ai_mentor",
-            
-            r"(?i).*hackathon.*": "hackathons",
-            r"(?i).*iipl.*": "iipl_info",
-            r"(?i).*sport.*event.*": "sports_events",
-            r"(?i).*connect.*student.*": "student_connect",
-            r"(?i).*weekly.*challenge.*": "weekly_challenges",
-            r"(?i).*showcase.*skill.*": "showcase_skills",
-            r"(?i).*build.*resume.*": "resume_building",
-            r"(?i).*network.*": "networking"
-        }
-    
-    def get_template_response(self, query: str) -> str:
-        """Get template response for query if pattern matches (excluding memory queries)"""
-        # Skip template matching for memory-related queries
-        memory_keywords = [
-            "conversation history", "previous conversation", "what conversation", 
-            "what did we discuss", "what have we talked", "our conversation"
-        ]
-        
-        if any(keyword in query.lower() for keyword in memory_keywords):
-            return ""  # Let memory handler take over
-        
-        # Continue with normal template matching
-        for pattern, template_key in self.query_patterns.items():
-            if re.match(pattern, query):
-                return self.templates.get(template_key, "")
-        return ""
 
 class ResponseGenerator:
     """Generate responses using LLM with knowledge base priority and memory awareness"""
     
     def __init__(self, llm: ChatVertexAI):
         self.llm = llm
-        self.template_manager = ResponseTemplateManager()
-        self.system_prompt = """You are an AI assistant for Impacteers, a career platform that helps students and professionals with job search, skills development, and career guidance.
+        self.system_prompt = """You are the Impacteers AI Assistant, an intelligent career guidance system for Impacteers - a comprehensive career platform that helps students and professionals with job search, skills development, and career guidance.
 
-Important Guidelines:
-1. ALWAYS check conversation history first before responding
-2. If user asks about previous conversations, conversation history, or "what did we discuss", ALWAYS reference the actual conversation history provided
-3. Use specific information from context when available - PRIORITIZE CONTEXT OVER TEMPLATES
-4. Always encourage users to sign up for personalized features
-5. Provide specific, actionable advice with proper URLs from the context
-6. If context doesn't contain relevant information, acknowledge this and provide general guidance
-7. Keep responses concise but informative
-8. Focus on Impacteers' features: jobs, courses, assessments, mentorship, and community
-9. For specific queries about IIPL, mention it runs from August 5th to September 21st
-10. For mentor queries, mention Flipkart, Infosys, and early-stage startups
-11. For job fit queries, mention AI Job Match Score
-12. ALWAYS use the actual URLs from the context when they are provided
+🎯 YOUR MISSION:
+Empower users to accelerate their careers through personalized guidance, relevant opportunities, and strategic skill development on the Impacteers platform.
 
-MEMORY QUERIES HANDLING:
-- If user asks about "conversation history", "what we discussed", "previous conversation", or similar:
-  - ALWAYS reference the actual conversation history
-  - Summarize what was actually discussed
-  - Do NOT give generic responses about internships or tech jobs unless that's what was actually discussed
+🧠 INTELLIGENT RESPONSE FRAMEWORK:
 
-Context: {context}
+1. **ANALYZE THE QUERY** (Think First):
+   - Query Type: Job search, Skills development, Courses, Mentorship, Community events
+   - User Stage: Student, Fresh graduate, Professional, Career changer
+   - Intent: Information seeking, Action planning, Problem solving, Exploration
 
-Conversation History: {history}
+2. **CONTEXTUAL RESPONSE STRATEGY**:
+   - WITH Knowledge Base Context: Use specific information, URLs, and details provided
+   - WITH Conversation History: Build naturally on previous discussion threads
+   - WITHOUT Context: Provide foundational guidance and direct to platform features
 
-User Question: {query}
+3. **STRUCTURED RESPONSE APPROACH**:
+   - **Direct Answer**: Address the specific question immediately and clearly
+   - **Value Enhancement**: Add relevant insights, tips, or related information
+   - **Action Steps**: Provide concrete next steps they can take
+   - **Impacteers Integration**: Connect to relevant platform features (signup, assessments, etc.)
 
-Response:"""
+4. **IMPACTEERS PLATFORM EXPERTISE**:
+   - **Jobs**: Promote AI Job Match Score for personalized job matching
+   - **Skills**: Recommend skill assessments before course selection
+   - **Learning**: Guide to curated courses and learning paths
+   - **Mentorship**: Connect with experienced mentors from top companies
+   - **Community**: Highlight IIPL events, hackathons, and networking opportunities
+
+5. **COMMUNICATION STYLE**:
+   - Professional yet friendly and approachable
+   - Encouraging and confidence-building
+   - Results-oriented with practical advice
+   - Personalized to their specific situation
+
+6. **MEMORY & CONTEXT HANDLING**:
+   - When conversation history provided: Reference and build upon previous topics
+   - When no history: Treat as fresh interaction, establish foundation
+   - For explicit memory queries: Provide intelligent conversation summaries
+
+📚 KNOWLEDGE BASE CONTEXT:
+{context}
+
+💬 CONVERSATION HISTORY:
+{history}
+
+❓ USER QUESTION:
+{query}
+
+🤖 IMPACTEERS AI RESPONSE:"""
     
     async def generate_response(self, query: str, context: str, history: List[Dict]) -> str:
         """Generate response with knowledge base priority and enhanced memory awareness"""
@@ -355,8 +242,7 @@ Response:"""
         memory_keywords = [
             "conversation history", "previous conversation", "what conversation", 
             "what did we discuss", "what have we talked", "our conversation",
-            "conversation we have", "what we discussed", "chat history",
-            "previous messages", "earlier conversation"
+            "what we discussed", "chat history", "previous messages", "earlier conversation"
         ]
         
         query_lower = query.lower()
@@ -391,13 +277,7 @@ Response:"""
                 logger.error(f"LLM response generation failed: {e}")
                 # Fall through to template fallback
         
-        # PRIORITY 2: Template fallback only if no good context available
-        template_response = self.template_manager.get_template_response(query)
-        if template_response:
-            logger.info(f"Using template fallback for query: {query[:50]}...")
-            return template_response
-        
-        # PRIORITY 3: Generic fallback
+        # PRIORITY 2: Generic fallback
         logger.info(f"Using generic fallback for query: {query[:50]}...")
         return "I apologize, but I don't have specific information about that right now. Please sign up to explore Impacteers' features including jobs, courses, skill assessments, mentorship, and community events!"
     
@@ -462,118 +342,68 @@ class InferenceService:
         # Set entry point
         workflow.set_entry_point("load_history")
 
-        # Error-handling condition function
-        def check_for_error(state: InferenceState) -> str:
-            return "handle_error" if state.get("error") else "continue"
+        # Simplified error-handling condition function
+        def should_handle_error(state: InferenceState) -> str:
+            return "error" if state.get("error") else "continue"
 
         # Add conditional edges for each node with error handling
         workflow.add_conditional_edges(
             "load_history",
-            check_for_error,
-            {
-                "handle_error": "handle_error",
-                "continue": "process_query"
-            }
+            should_handle_error,
+            {"error": "handle_error", "continue": "process_query"}
         )
 
         workflow.add_conditional_edges(
             "process_query",
-            check_for_error,
-            {
-                "handle_error": "handle_error",
-                "continue": "retrieve_documents"
-            }
+            should_handle_error,
+            {"error": "handle_error", "continue": "retrieve_documents"}
         )
 
         workflow.add_conditional_edges(
             "retrieve_documents",
-            check_for_error,
-            {
-                "handle_error": "handle_error",
-                "continue": "build_context"
-            }
+            should_handle_error,
+            {"error": "handle_error", "continue": "build_context"}
         )
 
         workflow.add_conditional_edges(
             "build_context",
-            check_for_error,
-            {
-                "handle_error": "handle_error",
-                "continue": "generate_response"
-            }
+            should_handle_error,
+            {"error": "handle_error", "continue": "generate_response"}
         )
 
         workflow.add_conditional_edges(
             "generate_response",
-            check_for_error,
-            {
-                "handle_error": "handle_error",
-                "continue": "save_conversation"
-            }
+            should_handle_error,
+            {"error": "handle_error", "continue": "save_conversation"}
         )
 
         workflow.add_conditional_edges(
             "save_conversation",
-            check_for_error,
-            {
-                "handle_error": "handle_error",
-                "continue": END
-            }
+            should_handle_error,
+            {"error": "handle_error", "continue": END}
         )
 
         # Handle error ends the graph
         workflow.add_edge("handle_error", END)
 
         return workflow.compile(checkpointer=self.memory)
-    async def debug_redis_conversations(self, user_id: str):
-        """Debug method to check what's actually in Redis"""
-        try:
-            # Check total conversations in Redis for this user
-            user_convs = await self.db_manager.get_conversation_history(user_id)
-            logger.info(f"Conversations for user {user_id}: {len(user_convs)}")
-
-            # Get all user sessions
-            all_users = await self.db_manager.redis_manager.get_all_user_sessions()
-            logger.info(f"Total users in Redis: {len(all_users)}")
-
-            # Log sample conversations for this user
-            logger.info("Sample conversations for this user:")
-            for i, conv in enumerate(user_convs[:5]):  # Show first 5
-                query = conv.get('user_query', 'N/A')
-                timestamp = conv.get('timestamp', 'N/A')
-                logger.info(f"  {i+1}. Query: {query}, Time: {timestamp}")
-
-        except Exception as e:
-            logger.error(f"Redis debug failed: {e}")
 
     async def _load_history(self, state: InferenceState) -> InferenceState:
-        """Load conversation history from Redis with enhanced debugging"""
+        """Load conversation history from Redis"""
         try:
             state["stage"] = "loading_history"
-    
-            logger.info(f"Loading history for user: {state['user_id']}")
             
-            # DEBUG: Check Redis state first
-            await self.debug_redis_conversations(state['user_id'])
-    
             # Load from Redis (short-term memory with TTL)
             redis_history = await self.db_manager.get_conversation_history(
-                state["user_id"], 
+                state["session_id"], 
                 limit=settings.max_conversation_history
             )
-    
-            logger.info(f"Redis returned {len(redis_history)} conversations")
-    
+            
             # Convert all types to serializable types
             serializable_history = convert_all_types_to_serializable(redis_history)
             state["conversation_history"] = serializable_history
-    
-            # DEBUG: Log each conversation
-            for i, conv in enumerate(serializable_history):
-                user_query = conv.get('user_query', 'N/A')
-                response_preview = conv.get('response', 'N/A')[:50] + "..." if len(conv.get('response', '')) > 50 else conv.get('response', 'N/A')
-                logger.info(f"  Conversation {i+1}: '{user_query}' -> '{response_preview}'")
-    
+            
+            logger.info(f"Loaded {len(serializable_history)} conversations for session {state['session_id']}")
             return state
         except Exception as e:
             logger.error(f"History loading failed: {str(e)}")
@@ -640,7 +470,7 @@ class InferenceService:
             return state
     
     async def _save_conversation(self, state: InferenceState) -> InferenceState:
-        """Save conversation to Redis with enhanced logging"""
+        """Save conversation to Redis"""
         try:
             state["stage"] = "saving_conversation"
 
@@ -648,23 +478,16 @@ class InferenceService:
             serializable_retrieved_docs = convert_all_types_to_serializable(state["retrieved_docs"])
             serializable_metadata = convert_all_types_to_serializable({"processed_query": state["processed_query"]})
 
-            # DEBUG: Log what we're trying to save
-            logger.info(f"Saving conversation for user {state['user_id']}")
-            logger.info(f"User query: {state['user_query']}")
-            logger.info(f"Response: {state['response'][:100]}...")
-
             # Save to Redis
             await self.db_manager.save_conversation(
-                state["user_id"],  # Changed from session_id to user_id
+                state["session_id"],
                 state["user_query"],
                 state["response"],
                 serializable_retrieved_docs,
                 serializable_metadata
             )
 
-            logger.info(f"Successfully saved conversation to Redis")
-
-            # UPDATE: Add current conversation to history for next request
+            # Add current conversation to history for next request
             current_conversation = {
                 "user_query": state["user_query"],
                 "response": state["response"],
@@ -682,8 +505,7 @@ class InferenceService:
             # Keep only recent conversations (last 10)
             state["conversation_history"] = state["conversation_history"][-10:]
 
-            logger.info(f"Updated conversation history, now has {len(state['conversation_history'])} items")
-
+            logger.info(f"Saved conversation for session {state['session_id']}")
             return state
         except Exception as e:
             logger.error(f"Conversation saving failed: {str(e)}")
@@ -702,32 +524,22 @@ class InferenceService:
         """Main chat interface with Redis-based conversation storage"""
         start_time = time.time()
 
-        # Use user_id as primary identifier, fallback to session_id for compatibility
-        actual_user_id = user_id or request.session_id or f"user_{uuid.uuid4()}"
-        thread_id = f"thread_{actual_user_id}"
-
-        logger.info(f"Processing request for user: {actual_user_id}, thread: {thread_id}")
-        logger.info(f"User query: {request.query}")
+        # Use session_id consistently
+        session_id = request.session_id or f"session_{uuid.uuid4()}"
+        thread_id = f"thread_{session_id}"
 
         # Check for existing workflow state
         config = {"configurable": {"thread_id": thread_id}}
 
         try:
             existing_state = await self.graph.aget_state(config)
-            if existing_state and existing_state.values:
-                logger.info(f"Previous state exists with keys: {list(existing_state.values.keys())}")
-                if 'conversation_history' in existing_state.values:
-                    history_length = len(existing_state.values['conversation_history'])
-                    logger.info(f"Previous state has {history_length} conversation history items")
-            else:
-                logger.info("No previous state found")
             has_previous_state = existing_state and existing_state.values
         except Exception as e:
             logger.error(f"Failed to get existing state: {e}")
             has_previous_state = False
 
         initial_state = InferenceState(
-            user_id=actual_user_id,  # Changed from session_id to user_id
+            session_id=session_id,
             user_query=request.query,
             processed_query="",
             retrieved_docs=[],
@@ -745,7 +557,6 @@ class InferenceService:
             previous_values = existing_state.values
             if previous_values.get("conversation_history"):
                 initial_state["conversation_history"] = previous_values["conversation_history"]
-                logger.info(f"Carried forward {len(initial_state['conversation_history'])} conversations from previous state")
 
         try:
             # Execute with consistent thread_id for memory persistence
@@ -753,19 +564,9 @@ class InferenceService:
 
             processing_time = time.time() - start_time
 
-            # DEBUG: Log final state
-            final_history_length = len(final_state.get('conversation_history', []))
-            logger.info(f"Final conversation history length: {final_history_length}")
-
-            if final_history_length > 0:
-                logger.info("Final conversation history items:")
-                for i, conv in enumerate(final_state.get('conversation_history', [])):
-                    user_q = conv.get('user_query', 'N/A')
-                    logger.info(f"  {i+1}. {user_q}")
-
             return ChatResponse(
                 response=final_state.get("response", ""),
-                session_id=actual_user_id,  # Return user_id as session_id for compatibility
+                session_id=session_id,
                 retrieved_docs=len(final_state.get("retrieved_docs", [])),
                 context_used=len(final_state.get("context", "")) > 0,
                 processing_time=processing_time,
@@ -778,38 +579,19 @@ class InferenceService:
 
             return ChatResponse(
                 response="I apologize, but I'm having trouble right now. Please try again or visit our platform to explore Impacteers' features!",
-                session_id=actual_user_id,
+                session_id=session_id,
                 retrieved_docs=0,
                 context_used=False,
                 processing_time=processing_time,
                 error=str(e)
             )
     
-    async def get_conversation_history(self, user_id: str) -> List[Dict[str, Any]]:
-        """Get conversation history for a user from Redis"""
+    async def get_conversation_history(self, session_id: str) -> List[Dict[str, Any]]:
+        """Get conversation history for a session from Redis"""
         try:
-            history = await self.db_manager.get_conversation_history(user_id)
+            history = await self.db_manager.get_conversation_history(session_id)
             return convert_all_types_to_serializable(history)
         except Exception as e:
             logger.error(f"Failed to get conversation history: {e}")
             return []
 
-    def test_template_matching(self):
-        """Test method to verify template matching works correctly"""
-        test_queries = [
-            "I'm looking for a job",
-            "Show me jobs in Bangalore", 
-            "What's IIPL?",
-            "Free courses available?",
-            "Can I get help from someone experienced?",
-            "Are there any hackathons?",
-            "I don't know what skills I have"
-        ]
-        
-        for query in test_queries:
-            template_response = self.response_generator.template_manager.get_template_response(query)
-            print(f"Query: {query}")
-            print(f"Template Match: {'Yes' if template_response else 'No'}")
-            if template_response:
-                print(f"Response: {template_response[:100]}...")
-            print("-" * 80)

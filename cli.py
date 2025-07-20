@@ -63,7 +63,7 @@ class RAGSystemCLI:
         
         # Get sample documents
         sample_docs = await self.ingestion_service.get_sample_documents()
-        
+        print(f"Sample documents loaded: {len(sample_docs)}")
         # Ingest documents
         click.echo("📚 Ingesting sample documents...")
         ingestion_result = await self.ingestion_service.ingest_documents(sample_docs)

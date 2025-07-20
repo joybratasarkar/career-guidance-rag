@@ -74,7 +74,7 @@ class ChatResponse(BaseModel):
 class DocumentInput(BaseModel):
     """Input model for document ingestion"""
     content: str = Field(..., description="Document content")
-    document_type: DocumentType = Field(..., description="Type of document")
+    document_type: Any = Field(..., description="Type of document")
     category: Category = Field(..., description="Document category")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
     
