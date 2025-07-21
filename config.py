@@ -9,10 +9,13 @@ from typing import Optional
 from pydantic import Field
 from pydantic_settings import BaseSettings
 from sentence_transformers import SentenceTransformer
-from dotenv import load_dotenv
-load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI") # Note: os.getenv returns strings, convert if needed
+# Load .env only if running locally (not in Render)
+if not os.getenv("RENDER"):
+    from dotenv import load_dotenv
+    load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")
 
 
 
@@ -37,7 +40,8 @@ class Settings(BaseSettings):
     
     # MongoDB Configuration
     mongo_uri: str = Field(
-        default=MONGO_URI or "mongodb+srv://user:password@host/database",
+        default="mongodb://localhost:27017",  # Local fallback
+        env="MONGO_URI",
         description="MongoDB connection URI"
     )
     database_name: str = Field(default="impacteers_rag", description="MongoDB database name")
