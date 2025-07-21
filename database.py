@@ -3,13 +3,24 @@ Database operations for the Impacteers RAG system
 MongoDB for documents/evaluations, Redis for conversations
 """
 
+import asyncio
 import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
-from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo import IndexModel, TEXT
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+
+try:
+    from motor.motor_asyncio import AsyncIOMotorClient
+    from pymongo import IndexModel, TEXT
+except ImportError as e:
+    logging.error(f"MongoDB dependencies missing: {e}")
+    raise ImportError("Please install: pip install motor pymongo") from e
+
+try:
+    from sklearn.metrics.pairwise import cosine_similarity
+    import numpy as np
+except ImportError as e:
+    logging.error(f"ML dependencies missing: {e}")
+    raise ImportError("Please install: pip install scikit-learn numpy") from e
 
 from config import settings
 from models import Document
@@ -41,16 +52,26 @@ class DatabaseManager:
             return  # Already connected
 
         try:
-            # Connect to MongoDB
-            self.client = AsyncIOMotorClient(settings.mongo_uri)
+            # Connect to MongoDB with proper error handling
+            if not settings.mongo_uri or "mongodb" not in settings.mongo_uri.lower():
+                raise ValueError(f"Invalid MongoDB URI: {settings.mongo_uri}")
+                
+            self.client = AsyncIOMotorClient(
+                settings.mongo_uri,
+                serverSelectionTimeoutMS=5000,  # 5 second timeout
+                connectTimeoutMS=10000,         # 10 second connection timeout
+                maxPoolSize=10,                 # Limit connections
+                retryWrites=True
+            )
             self.db = self.client[settings.database_name]
             self.documents_collection = self.db.documents
             self.evaluations_collection = self.db.evaluations
 
-            await self.client.admin.command("ping")  # Check connection
+            # Test connection with timeout
+            await self.client.admin.command("ping")
             await self._setup_indexes()
             self._mongo_connected = True
-            logger.info("Connected to MongoDB")
+            logger.info(f"Connected to MongoDB: {settings.database_name}")
             
             # Connect to Redis
             await self.redis_manager.connect()
@@ -66,7 +87,10 @@ class DatabaseManager:
         """Disconnect from both MongoDB and Redis"""
         try:
             if self.client:
+                # Properly close MongoDB connection
                 self.client.close()
+                # Wait for the client to close properly
+                await asyncio.sleep(0.1)
                 self._mongo_connected = False
                 logger.info("Disconnected from MongoDB")
         except Exception as e:
@@ -267,8 +291,14 @@ class DatabaseManager:
     async def health_check(self) -> Dict[str, Any]:
         """Health check endpoint for both MongoDB and Redis"""
         try:
-            # Check MongoDB
-            await self.client.admin.command("ping")
+            # Check MongoDB with timeout
+            if not self.client:
+                raise Exception("MongoDB client not initialized")
+                
+            await asyncio.wait_for(
+                self.client.admin.command("ping"), 
+                timeout=5.0
+            )
             mongo_status = "healthy"
             
             # Check Redis
