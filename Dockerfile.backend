@@ -31,9 +31,8 @@ RUN pip install --no-cache-dir --upgrade pip wheel && \
     python -c "import gc; gc.collect()"
 
 # Copy application code (exclude .env as Render uses environment variables)
-COPY *.py .
-COPY xooper.json* .
-COPY templates/ templates/ 2>/dev/null || true
+COPY *.py ./
+COPY xooper.json ./
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
