@@ -1,50 +1,29 @@
-# Core FastAPI Backend
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-pydantic>=2.0.0
-pydantic-settings
-python-multipart
-
-# Streamlit Frontend
-streamlit>=1.28.0
-websockets>=11.0.0
-requests>=2.31.0
-
-# CLI support
-click
-
-# LangGraph and LangChain
-langgraph
-langchain
-langchain-google-vertexai
-langchain-text-splitters
-
-# Database Storage
-pymongo>=4.6.0
-motor>=3.3.0
-
-# Redis Conversation Memory
-redis[hiredis]>=4.5.0
-
-# Google Cloud AI
-google-cloud-aiplatform
-google-auth
-
-# Machine Learning
-numpy
-scikit-learn
-sentence-transformers>=2.2.2
-transformers>=4.21.0
-torch
-
-# Utilities
-python-dotenv
-
-# Development and Testing
-pytest
-pytest-asyncio
-httpx
-
-# Build tools
-setuptools
-wheel
+asyncio-redis==0.16.0
+backports.tarfile==1.2.0
+beautifulsoup4==4.13.4
+fastapi==0.104.1
+fitz==0.0.1.dev2
+grpcio-status==1.73.1
+hiredis==3.2.1
+httptools==0.6.4
+importlib-metadata==8.0.0
+jaraco.collections==5.1.0
+lang==0.1
+langchain-community==0.3.27
+langchain-google-vertexai==2.0.27
+langgraph==0.5.3
+motor==3.7.1
+pdfminer-six==20250506
+pdfplumber==0.11.7
+pip-chill==1.0.3
+platformdirs==4.2.2
+pypdf2==3.0.1
+pytest-asyncio==1.1.0
+python-multipart==0.0.6
+redis==6.2.0
+sentence-transformers==5.0.0
+streamlit==1.47.0
+tomli==2.0.1
+uvicorn==0.24.0
+uvloop==0.21.0
+watchfiles==1.1.0
