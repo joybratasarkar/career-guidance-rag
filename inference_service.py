@@ -183,57 +183,70 @@ class ResponseGenerator:
     
     def __init__(self, llm: ChatVertexAI):
         self.llm = llm
-        self.system_prompt = """You are the Impacteers AI Assistant, an intelligent career guidance system for Impacteers - a comprehensive career platform that helps students and professionals with job search, skills development, and career guidance.
+        self.system_prompt = """You are the Impacteers AI Assistant - a natural, helpful career guidance chatbot.
 
-🎯 YOUR MISSION:
-Empower users to accelerate their careers through personalized guidance, relevant opportunities, and strategic skill development on the Impacteers platform.
+Your role is to have natural conversations and provide the most relevant Impacteers platform link based on what the user needs.
 
-🧠 INTELLIGENT RESPONSE FRAMEWORK:
+🔗 LINK SUGGESTIONS (Choose the MOST relevant one):
 
-1. **ANALYZE THE QUERY** (Think First):
-   - Query Type: Job search, Skills development, Courses, Mentorship, Community events
-   - User Stage: Student, Fresh graduate, Professional, Career changer
-   - Intent: Information seeking, Action planning, Problem solving, Exploration
+**Jobs & Career:**
+- Job search, career opportunities, employment, positions, hiring
+- Link: [Find Jobs](https://impacteers.com/jobs)
 
-2. **CONTEXTUAL RESPONSE STRATEGY**:
-   - WITH Knowledge Base Context: Use specific information, URLs, and details provided
-   - WITH Conversation History: Build naturally on previous discussion threads
-   - WITHOUT Context: Provide foundational guidance and direct to platform features
+**Learning & Courses:**  
+- Courses, learning, training, education, study, upskill, certification
+- Link: [Browse Courses](https://impacteers.com/courses)
 
-3. **STRUCTURED RESPONSE APPROACH**:
-   - **Direct Answer**: Address the specific question immediately and clearly
-   - **Value Enhancement**: Add relevant insights, tips, or related information
-   - **Action Steps**: Provide concrete next steps they can take
-   - **Impacteers Integration**: Connect to relevant platform features (signup, assessments, etc.)
+**Skills & Assessment:**
+- Skills, assessment, test, evaluation, abilities, competencies
+- Link: [Skill Assessment](https://impacteers.com/assessment)
 
-4. **IMPACTEERS PLATFORM EXPERTISE**:
-   - **Jobs**: Promote AI Job Match Score for personalized job matching
-   - **Skills**: Recommend skill assessments before course selection
-   - **Learning**: Guide to curated courses and learning paths
-   - **Mentorship**: Connect with experienced mentors from top companies
-   - **Community**: Highlight IIPL events, hackathons, and networking opportunities
+**AI Career Assessment:**
+- AI career assessment, career test, AI test, career matching
+- Link: [AI Career Assessment](https://impacteers.com/career-assessment-test-ai)
 
-5. **COMMUNICATION STYLE**:
-   - Professional yet friendly and approachable
-   - Encouraging and confidence-building
-   - Results-oriented with practical advice
-   - Personalized to their specific situation
+**Mentorship & Guidance:**
+- Mentors, guidance, advice, coaching, support, help
+- Link: [Find Mentors](https://impacteers.com/mentor)
 
-6. **MEMORY & CONTEXT HANDLING**:
-   - When conversation history provided: Reference and build upon previous topics
-   - When no history: Treat as fresh interaction, establish foundation
-   - For explicit memory queries: Provide intelligent conversation summaries
+**Community & Networking:**
+- Community, networking, events, meetups, connections
+- Link: [Join Community](https://impacteers.com/community)
 
-📚 KNOWLEDGE BASE CONTEXT:
-{context}
+**Clubs & Groups:**
+- Clubs, groups, interest groups, professional clubs
+- Link: [Join Clubs](https://impacteers.com/clubs)
 
-💬 CONVERSATION HISTORY:
-{history}
+**Cover Letter Help:**
+- Cover letter, application letter, job application
+- Link: [Cover Letter Builder](https://impacteers.com/cover-letter)
 
-❓ USER QUESTION:
-{query}
+**Learning Path:**
+- Learning path, career roadmap, skill roadmap, progression
+- Link: [Learning Paths](https://impacteers.com/learning-path)
 
-🤖 IMPACTEERS AI RESPONSE:"""
+**Events:**
+- Events, workshops, webinars, seminars, conferences
+- Link: [Events](https://impacteers.com/events)
+
+🗣️ HOW TO RESPOND:
+1. Be natural and conversational - like a friendly human assistant
+2. For GREETINGS and CASUAL CHAT: Respond naturally WITHOUT forcing links
+3. For CAREER QUESTIONS: Answer helpfully and include the most relevant link
+4. Use context from previous conversation if provided
+5. Only suggest links when the user is asking for help or information about career topics
+
+💬 NATURAL CONVERSATION EXAMPLES:
+- "Hi" → "Hi there! How can I help you today?"
+- "Who are you?" → "I'm your Impacteers AI assistant, here to help with your career journey!"
+- "How are you?" → "I'm doing great! How can I assist you with your career goals?"
+- "I need a job" → "I'd be happy to help you find job opportunities! [Find Jobs](https://impacteers.com/jobs)"
+
+📚 Knowledge Base: {context}
+💬 Previous Chat: {history}  
+❓ User Question: {query}
+
+Response:"""
     
     async def generate_response(self, query: str, context: str, history: List[Dict]) -> str:
         """Generate response with knowledge base priority and enhanced memory awareness"""
@@ -277,10 +290,71 @@ Empower users to accelerate their careers through personalized guidance, relevan
                 logger.error(f"LLM response generation failed: {e}")
                 # Fall through to template fallback
         
-        # PRIORITY 2: Generic fallback
-        logger.info(f"Using generic fallback for query: {query[:50]}...")
-        return "I apologize, but I don't have specific information about that right now. Please sign up to explore Impacteers' features including jobs, courses, skill assessments, mentorship, and community events!"
+        # PRIORITY 2: Smart fallback with link suggestion
+        logger.info(f"Using smart fallback for query: {query[:50]}...")
+        return self._generate_smart_fallback(query, history)
     
+    def _generate_smart_fallback(self, query: str, history: List[Dict] = None) -> str:
+        """Generate intelligent fallback response with relevant link"""
+        query_lower = query.lower().strip()
+        
+        # Handle greetings and casual conversations naturally without forcing links
+        greeting_patterns = [
+            "hi", "hello", "hey", "good morning", "good afternoon", "good evening",
+            "who are you", "what are you", "how are you", "what's up", "what up",
+            "thanks", "thank you", "bye", "goodbye", "see you", "nice to meet you"
+        ]
+        
+        # Check for simple greetings - respond naturally without links
+        if any(greeting in query_lower for greeting in greeting_patterns):
+            if "who are you" in query_lower or "what are you" in query_lower:
+                return "I'm your Impacteers AI assistant! I'm here to help you with your career journey - whether you're looking for jobs, courses, mentorship, or just need some career guidance. How can I help you today?"
+            elif "how are you" in query_lower:
+                return "I'm doing great, thanks for asking! I'm here and ready to help you with your career goals. What would you like to explore today?"
+            elif any(word in query_lower for word in ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"]):
+                return "Hi there! Great to meet you! I'm your Impacteers AI assistant. How can I help you with your career today?"
+            elif any(word in query_lower for word in ["thanks", "thank you"]):
+                return "You're very welcome! Is there anything else I can help you with?"
+            elif any(word in query_lower for word in ["bye", "goodbye", "see you"]):
+                return "Goodbye! Feel free to come back anytime you need career help. Have a great day!"
+            else:
+                return "Hello! I'm here to help you with your career journey. What would you like to know about?"
+        
+        # For career-related queries, provide relevant links
+        if any(word in query_lower for word in ["job", "career", "work", "employment", "position", "opportunity", "hiring"]):
+            return "I can help you with career opportunities! Check out [Find Jobs](https://impacteers.com/jobs) to discover positions that match your skills and interests."
+        
+        elif any(word in query_lower for word in ["course", "learn", "training", "education", "study", "upskill", "certification"]):
+            return "Great question about learning! Explore [Browse Courses](https://impacteers.com/courses) to find training programs that can boost your career."
+        
+        elif any(word in query_lower for word in ["skill", "assess", "test", "evaluation", "ability", "competency"]):
+            return "Understanding your skills is important! Take our [Skill Assessment](https://impacteers.com/assessment) to identify your strengths and areas for growth."
+        
+        elif any(word in query_lower for word in ["ai career", "career test", "ai test", "career match", "career assessment"]):
+            return "Discover your ideal career path! Try our [AI Career Assessment](https://impacteers.com/career-assessment-test-ai) for personalized career recommendations."
+        
+        elif any(word in query_lower for word in ["mentor", "guidance", "advice", "coach", "support", "help"]):
+            return "Getting guidance is a smart move! Connect with experienced professionals through [Find Mentors](https://impacteers.com/mentor) for personalized career advice."
+        
+        elif any(word in query_lower for word in ["community", "network", "event", "meetup", "connect"]):
+            return "Building connections is key to career success! [Join Community](https://impacteers.com/community) to network with peers and attend valuable events."
+        
+        elif any(word in query_lower for word in ["club", "group", "interest", "professional club"]):
+            return "Join like-minded professionals! Explore [Join Clubs](https://impacteers.com/clubs) to connect with people who share your interests and goals."
+        
+        elif any(word in query_lower for word in ["cover letter", "application letter", "job application"]):
+            return "Craft compelling applications! Use our [Cover Letter Builder](https://impacteers.com/cover-letter) to create professional cover letters that stand out."
+        
+        elif any(word in query_lower for word in ["learning path", "roadmap", "career roadmap", "skill roadmap", "progression"]):
+            return "Plan your career growth! Explore [Learning Paths](https://impacteers.com/learning-path) to find structured pathways for skill development."
+        
+        elif any(word in query_lower for word in ["event", "workshop", "webinar", "seminar", "conference"]):
+            return "Stay updated with valuable learning opportunities! Check out [Events](https://impacteers.com/events) for workshops, webinars, and networking events."
+        
+        else:
+            # Generic fallback - suggest the most popular feature
+            return "I'm here to help with your career journey! Start by exploring [Find Jobs](https://impacteers.com/jobs) or take our [AI Career Assessment](https://impacteers.com/career-assessment-test-ai) to discover opportunities."
+
     async def _handle_memory_query(self, query: str, history: List[Dict]) -> str:
         """Handle queries about conversation history"""
         if not history:
