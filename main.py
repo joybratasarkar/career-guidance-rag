@@ -152,12 +152,20 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     try:
         while True:
             data = await websocket.receive_text()
-            # Create chat request and get response with user_id
-            req = ChatRequest(query=data, session_id=user_id)
-            res = await inference_service.chat(req, user_id=user_id)  # Pass user_id explicitly
-            # Send back via WebSocket
-            await manager.send_personal_message(res.response, websocket)
+            try:
+                # Create chat request and get response with user_id
+                req = ChatRequest(query=data, session_id=user_id)
+                res = await inference_service.chat(req, user_id=user_id)  # Pass user_id explicitly
+                # Send back via WebSocket
+                await manager.send_personal_message(res.response, websocket)
+            except Exception as e:
+                logger.error(f"Chat processing error for user {user_id}: {e}")
+                error_message = "I apologize, but I'm having trouble processing your request right now. Please try again."
+                await manager.send_personal_message(error_message, websocket)
     except WebSocketDisconnect:
+        manager.disconnect(user_id, websocket)
+    except Exception as e:
+        logger.error(f"WebSocket error for user {user_id}: {e}")
         manager.disconnect(user_id, websocket)
 
 # REST chat fallback
@@ -165,8 +173,21 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
 async def chat(request: ChatRequest):
     if not inference_service:
         raise HTTPException(status_code=503, detail="Inference service not available")
-    # For REST endpoint, use session_id as user_id for compatibility
-    return await inference_service.chat(request, user_id=request.session_id)
+    
+    try:
+        # For REST endpoint, use session_id as user_id for compatibility
+        return await inference_service.chat(request, user_id=request.session_id)
+    except Exception as e:
+        logger.error(f"Chat processing error: {e}")
+        # Return error response instead of raising exception
+        return ChatResponse(
+            response="I apologize, but I'm having trouble processing your request right now. Please try again.",
+            session_id=request.session_id or "error_session",
+            retrieved_docs=0,
+            context_used=False,
+            processing_time=0.0,
+            error=str(e)
+        )
 
 # Ingest documents
 @app.post("/ingest", response_model=IngestionResponse)

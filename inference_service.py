@@ -183,7 +183,11 @@ class ResponseGenerator:
     
     def __init__(self, llm: ChatVertexAI):
         self.llm = llm
-        self.system_prompt = """You are the Impacteers AI Assistant - a natural, helpful career guidance chatbot.
+        self.system_prompt = """
+        You are the Impacteers AI Assistant, an intelligent career guidance system for Impacteers - a comprehensive career platform that helps students and professionals with job search, skills development, and career guidance.
+
+🎯 YOUR MISSION:
+Empower users to accelerate their careers through personalized guidance, relevant opportunities, and strategic skill development on the Impacteers platform.
 
 Your role is to have natural conversations and provide the most relevant Impacteers platform link based on what the user needs.
 
@@ -264,9 +268,9 @@ Response:"""
         if is_memory_query:
             logger.info(f"Memory query detected: {query}")
             return await self._handle_memory_query(query, history)
-        
+        # and len(context.strip()) > 50:  # We have substantial context
         # PRIORITY 1: Use knowledge base content if available and relevant
-        if context and len(context.strip()) > 50:  # We have substantial context
+        if context :
             logger.info(f"Using knowledge base content for query: {query[:50]}...")
             
             # Format conversation history for LLM
@@ -295,7 +299,7 @@ Response:"""
         return self._generate_smart_fallback(query, history)
     
     def _generate_smart_fallback(self, query: str, history: List[Dict] = None) -> str:
-        """Generate intelligent fallback response with relevant link"""
+        """Generate intelligent fallback response with precise intent recognition"""
         query_lower = query.lower().strip()
         
         # Handle greetings and casual conversations naturally without forcing links
@@ -320,40 +324,69 @@ Response:"""
             else:
                 return "Hello! I'm here to help you with your career journey. What would you like to know about?"
         
-        # For career-related queries, provide relevant links
-        if any(word in query_lower for word in ["job", "career", "work", "employment", "position", "opportunity", "hiring"]):
-            return "I can help you with career opportunities! Check out [Find Jobs](https://impacteers.com/jobs) to discover positions that match your skills and interests."
+        # PRECISE INTENT RECOGNITION - Order matters for specificity
         
-        elif any(word in query_lower for word in ["course", "learn", "training", "education", "study", "upskill", "certification"]):
-            return "Great question about learning! Explore [Browse Courses](https://impacteers.com/courses) to find training programs that can boost your career."
+        # 1. JOB SEARCH INTENT (highest priority for job-related terms)
+        job_primary_keywords = ["job", "jobs", "work", "employment", "position", "positions", "hiring", "vacancy", "vacancies", "opening", "openings"]
+        job_action_keywords = ["find", "search", "looking for", "need", "want", "apply", "get"]
         
-        elif any(word in query_lower for word in ["skill", "assess", "test", "evaluation", "ability", "competency"]):
+        if any(keyword in query_lower for keyword in job_primary_keywords):
+            # Check if it's specifically about job search
+            if any(action in query_lower for action in job_action_keywords) or "job" in query_lower:
+                return "I can help you find job opportunities! Check out [Find Jobs](https://impacteers.com/jobs) to discover positions that match your skills and interests."
+        
+        # 2. SKILLS ASSESSMENT INTENT (only for assessment-specific terms)
+        assessment_specific = ["skill assessment", "skills assessment", "assess my skills", "evaluate my skills", "test my skills", "skills test", "competency test", "ability test"]
+        if any(phrase in query_lower for phrase in assessment_specific):
             return "Understanding your skills is important! Take our [Skill Assessment](https://impacteers.com/assessment) to identify your strengths and areas for growth."
         
-        elif any(word in query_lower for word in ["ai career", "career test", "ai test", "career match", "career assessment"]):
+        # 3. AI CAREER ASSESSMENT INTENT (very specific)
+        ai_career_specific = ["ai career assessment", "career assessment", "ai career test", "career test", "career matching", "career recommendations", "what career", "which career"]
+        if any(phrase in query_lower for phrase in ai_career_specific):
             return "Discover your ideal career path! Try our [AI Career Assessment](https://impacteers.com/career-assessment-test-ai) for personalized career recommendations."
         
-        elif any(word in query_lower for word in ["mentor", "guidance", "advice", "coach", "support", "help"]):
+        # 4. LEARNING/COURSES INTENT
+        learning_keywords = ["course", "courses", "learn", "learning", "training", "education", "study", "upskill", "certification", "program", "class"]
+        if any(keyword in query_lower for keyword in learning_keywords):
+            return "Great question about learning! Explore [Browse Courses](https://impacteers.com/courses) to find training programs that can boost your career."
+        
+        # 5. MENTORSHIP INTENT
+        mentorship_keywords = ["mentor", "mentors", "mentorship", "guidance", "advice", "coach", "coaching", "support", "guide", "help me"]
+        if any(keyword in query_lower for keyword in mentorship_keywords):
             return "Getting guidance is a smart move! Connect with experienced professionals through [Find Mentors](https://impacteers.com/mentor) for personalized career advice."
         
-        elif any(word in query_lower for word in ["community", "network", "event", "meetup", "connect"]):
+        # 6. COMMUNITY/NETWORKING INTENT
+        community_keywords = ["community", "network", "networking", "connect", "connections", "meetup", "meet people"]
+        if any(keyword in query_lower for keyword in community_keywords):
             return "Building connections is key to career success! [Join Community](https://impacteers.com/community) to network with peers and attend valuable events."
         
-        elif any(word in query_lower for word in ["club", "group", "interest", "professional club"]):
+        # 7. CLUBS INTENT
+        clubs_keywords = ["club", "clubs", "group", "groups", "interest group", "professional club"]
+        if any(keyword in query_lower for keyword in clubs_keywords):
             return "Join like-minded professionals! Explore [Join Clubs](https://impacteers.com/clubs) to connect with people who share your interests and goals."
         
-        elif any(word in query_lower for word in ["cover letter", "application letter", "job application"]):
+        # 8. COVER LETTER INTENT
+        cover_letter_keywords = ["cover letter", "application letter", "job application", "apply for job", "application"]
+        if any(keyword in query_lower for keyword in cover_letter_keywords):
             return "Craft compelling applications! Use our [Cover Letter Builder](https://impacteers.com/cover-letter) to create professional cover letters that stand out."
         
-        elif any(word in query_lower for word in ["learning path", "roadmap", "career roadmap", "skill roadmap", "progression"]):
+        # 9. LEARNING PATH INTENT
+        path_keywords = ["learning path", "career path", "roadmap", "career roadmap", "skill roadmap", "progression", "career progression"]
+        if any(keyword in query_lower for keyword in path_keywords):
             return "Plan your career growth! Explore [Learning Paths](https://impacteers.com/learning-path) to find structured pathways for skill development."
         
-        elif any(word in query_lower for word in ["event", "workshop", "webinar", "seminar", "conference"]):
+        # 10. EVENTS INTENT
+        events_keywords = ["event", "events", "workshop", "workshops", "webinar", "webinars", "seminar", "seminars", "conference", "conferences"]
+        if any(keyword in query_lower for keyword in events_keywords):
             return "Stay updated with valuable learning opportunities! Check out [Events](https://impacteers.com/events) for workshops, webinars, and networking events."
         
-        else:
-            # Generic fallback - suggest the most popular feature
-            return "I'm here to help with your career journey! Start by exploring [Find Jobs](https://impacteers.com/jobs) or take our [AI Career Assessment](https://impacteers.com/career-assessment-test-ai) to discover opportunities."
+        # 11. CAREER GENERAL INTENT
+        career_keywords = ["career", "careers", "professional", "opportunity", "opportunities"]
+        if any(keyword in query_lower for keyword in career_keywords):
+            return "I can help with your career development! You might want to start with [Find Jobs](https://impacteers.com/jobs) for opportunities or [AI Career Assessment](https://impacteers.com/career-assessment-test-ai) for career guidance."
+        
+        # Generic fallback - suggest the most popular features
+        return "I'm here to help with your career journey! Start by exploring [Find Jobs](https://impacteers.com/jobs) or take our [AI Career Assessment](https://impacteers.com/career-assessment-test-ai) to discover opportunities."
 
     async def _handle_memory_query(self, query: str, history: List[Dict]) -> str:
         """Handle queries about conversation history"""
